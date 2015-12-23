@@ -36,7 +36,7 @@
     {- {{!Sdl.log}Log}}
     {- {{!Sdl.version}Version}}
     }}
-    {- {!Sdl.fileabstraction}
+     {- {!Sdl.fileabstraction}
     {ul
     {- {{!Sdl.io}IO abstraction}}
     {- {{!Sdl.fspaths}Filesystem paths}}
@@ -46,7 +46,7 @@
     {- {{!Sdl.colors}Colors}}
     {- {{!Sdl.points}Points}}
     {- {{!Sdl.rectangles}Rectangles}}
-    {- {{!Sdl.palettes}Pallettes}}
+    {- {{!Sdl.palettes}Palettes}}
     {- {{!Sdl.pixel_formats}Pixel formats}}
     {- {{!Sdl.surfaces}Surfaces}}
     {- {{!Sdl.renderers}Renderers}}
@@ -720,6 +720,7 @@ val unlock_surface : surface -> unit
 (** {{:http://wiki.libsdl.org/SDL_UnlockSurface}SDL_UnlockSurface} *)
 
 val must_lock : surface -> bool
+(** {{:http://wiki.libsdl.org/SDL_MUSTLOCK}SDL_MUSTLOCK} *)
 
 (**/**)
 val unsafe_surface_of_ptr : nativeint -> surface
@@ -940,56 +941,6 @@ val set_render_draw_color : renderer -> uint8 -> uint8 -> uint8 -> uint8 ->
 
 val set_render_target : renderer -> texture option -> unit result
 (** {{:http://wiki.libsdl.org/SDL_SetRenderTarget}SDL_SetRenderTarget} *)
-
-(** {2:fonts --  {{:http://jcatki.no-ip.org:8080/SDL_ttf/}SDL-TTF}} *)
-
-module TTF : sig
-  type font
-  val font_opt : font option Ctypes.typ
-  val font : font Ctypes.typ
-  val init : unit -> unit result
-  val quit : unit -> unit
-  val was_init : unit -> bool
-  val open_font : string -> int -> font result
-  val close_font : font -> unit
-  val render_text_blended :
-    font -> string -> color -> surface result
-  val render_utf8_blended :
-    font -> string -> color -> surface result
-  val render_unicode_blended :
-    font -> string -> color -> surface result
-  val size_utf8 :
-    font -> string -> (int * int) result
-  val font_line_skip :
-    font -> int
-  val glyph_metrics :
-    font -> int -> (int * int * int * int * int) result
-  type style
-  module Style : sig
-    val ( + ) : style -> style -> style
-    val normal : style
-    val bold : style
-    val italic : style
-    val underline : style
-    val strikethrough : style
-    val has : style -> style -> bool
-  end
-   val set_font_style : font -> style -> unit
-   val get_font_style : font -> style
-end
-
-(** {2:images --  {{:http://jcatki.no-ip.org:8080/SDL_image/SDL_image.html}sdl-image}} *)
-
-module Img : sig
-  val init_jpg : int
-  val init_png : int
-  val init_tif : int
-  val ( + ) : int -> int -> int
-  val init : int -> int
-  val quit : unit -> unit
-  val load : string -> surface result
-  (** {{:http://jcatki.no-ip.org:8080/SDL_image/SDL_image_11.html#SEC11}IMG_Load} *)
-end
 
 (** {2:textures {{:http://wiki.libsdl.org/CategoryRender}Textures}} *)
 
