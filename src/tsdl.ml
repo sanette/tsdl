@@ -190,8 +190,6 @@ module Init = struct
   let events = i sdl_init_events
   let everything = i sdl_init_everything
   let noparachute = i sdl_init_noparachute
-      (* SAN *)
-  let zero = i 0
 end
 
 let init =
@@ -1005,7 +1003,7 @@ let get_surface_format_enum s =
      memory ownership problems. *)
   get_pixel_format_format (getf (!@ s) surface_format)
 
-(* SAN: I do it anyway *)
+(* SAN: I do it anyway TODO: better do a copy *)
 let get_surface_format s =
   getf (!@ s) surface_format
 
@@ -1023,6 +1021,15 @@ let get_surface_pixels s kind =
   let pixels = getf (!@ s) surface_pixels in
   let pixels = coerce (ptr void) (access_ptr_typ_of_ba_kind kind) pixels in
   bigarray_of_ptr array1 ba_size kind pixels
+
+(* SAN *)
+let surface_to_string s =
+  let pitch = get_surface_pitch s in
+  let h = getf (!@ s) surface_h in
+  let length = (pitch * h) in
+  let pixels = getf (!@ s) surface_pixels in
+  let chars = coerce (ptr void) (ptr Ctypes.char) pixels in
+  string_from_ptr ~length chars
 
 let get_surface_size s =
   getf (!@ s) surface_w, getf (!@ s) surface_h

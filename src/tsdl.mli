@@ -121,8 +121,6 @@ module Init : sig
   val events : t
   val everything : t
   val noparachute : t
-  (* SAN: *)
-  val zero : t
 end
 (** Subsystem flags. *)
 
@@ -664,6 +662,9 @@ val get_surface_pixels : surface -> ('a, 'b) Bigarray.kind -> ('a, 'b) bigarray
     once the surface is unlocked or freed.
 
     @raise Invalid_argument If [kind] can't align with the surface pitch. *)
+
+(* SAN *)
+val surface_to_string : surface -> string
 
 val get_surface_size : surface -> int * int
 (** [get_surface_size s] is the fields [w] and [h] of [s]. *)
