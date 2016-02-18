@@ -1,13 +1,13 @@
 (*---------------------------------------------------------------------------
    Copyright 2013 Daniel C. Bünzli. All rights reserved.
    Distributed under the BSD3 license, see license at the end of the file.
-   tsdl release 0.9.0
+   %%NAME%% release %%VERSION%%
   ---------------------------------------------------------------------------*)
 
 (** SDL thin bindings.
 
     Consult the {{!conventions}binding conventions}, the
-    {{!Sdl.coverage}binding coverage} and {{!examples}examples} of
+    {{!Sdl.coverage_}binding coverage} and {{!examples}examples} of
     use.  Given the thinness of the binding most functions are
     documented by linking directly to SDL's own documentation.
 
@@ -21,62 +21,62 @@
     {ul
     {- {{:http://wiki.libsdl.org/APIByCategory}SDL API}}}
 
-    {e Release 0.9.0 — SDL version 2.0.3 — Daniel Bünzli <daniel.buenzl i\@erratique.ch> } *)
+    {e Release %%VERSION%% — SDL version %%SDLVERSION%% — %%MAINTAINER%% } *)
 
 (** {1:sdl SDL} *)
 
 (** SDL bindings.
 
     {ul
-    {- {!Sdl.basics}
+    {- {!Sdl.basics_}
     {ul
-    {- {{!Sdl.init}Initialization and shutdown}}
-    {- {{!Sdl.hints}Hints}}
-    {- {{!Sdl.errors}Errors}}
-    {- {{!Sdl.log}Log}}
-    {- {{!Sdl.version}Version}}
+    {- {{!Sdl.init_}Initialization and shutdown}}
+    {- {{!Sdl.hints_}Hints}}
+    {- {{!Sdl.errors_}Errors}}
+    {- {{!Sdl.log_}Log}}
+    {- {{!Sdl.version_}Version}}
     }}
-     {- {!Sdl.fileabstraction}
+    {- {!Sdl.fileabstraction_}
     {ul
-    {- {{!Sdl.io}IO abstraction}}
-    {- {{!Sdl.fspaths}Filesystem paths}}
+    {- {{!Sdl.io_}IO abstraction}}
+    {- {{!Sdl.fspaths_}Filesystem paths}}
     }}
-    {- {!Sdl.video}
+    {- {!Sdl.video_}
     {ul
-    {- {{!Sdl.colors}Colors}}
-    {- {{!Sdl.points}Points}}
-    {- {{!Sdl.rectangles}Rectangles}}
-    {- {{!Sdl.palettes}Palettes}}
-    {- {{!Sdl.pixel_formats}Pixel formats}}
-    {- {{!Sdl.surfaces}Surfaces}}
-    {- {{!Sdl.renderers}Renderers}}
-    {- {{!Sdl.textures}Textures}}
-    {- {{!Sdl.videodrivers}Video drivers}}
-    {- {{!Sdl.displays}Displays}}
-    {- {{!Sdl.windows}Windows}}
-    {- {{!Sdl.opengl}OpenGL contexts}}
-    {- {{!Sdl.screensaver}Screen saver}}
-    {- {{!Sdl.messageboxes}Message boxes}}
+    {- {{!Sdl.colors_}Colors}}
+    {- {{!Sdl.points_}Points}}
+    {- {{!Sdl.rectangles_}Rectangles}}
+    {- {{!Sdl.palettes_}Palettes}}
+    {- {{!Sdl.pixel_formats_}Pixel formats}}
+    {- {{!Sdl.surfaces_}Surfaces}}
+    {- {{!Sdl.renderers_}Renderers}}
+    {- {{!Sdl.textures_}Textures}}
+    {- {{!Sdl.videodrivers_}Video drivers}}
+    {- {{!Sdl.displays_}Displays}}
+    {- {{!Sdl.windows_}Windows}}
+    {- {{!Sdl.opengl_}OpenGL contexts}}
+    {- {{!Sdl.screensaver_}Screen saver}}
+    {- {{!Sdl.messageboxes_}Message boxes}}
     }}
-    {- {!Sdl.input}
+    {- {!Sdl.input_}
     {ul
-    {- {{!Sdl.keyboard}Keyboard}}
-    {- {{!Sdl.mouse}Mouse}}
-    {- {{!Sdl.touch}Touch and gestures}}
-    {- {{!Sdl.joystick}Joystick}}
-    {- {{!Sdl.gamecontroller}Game controller}}
-    {- {{!Sdl.events}Events}}
+    {- {{!Sdl.keyboard_}Keyboard}}
+    {- {{!Sdl.mouse_}Mouse}}
+    {- {{!Sdl.touch_}Touch and gestures}}
+    {- {{!Sdl.joystick_}Joystick}}
+    {- {{!Sdl.gamecontroller_}Game controller}}
+    {- {{!Sdl.events_}Events}}
     }}
-    {- {{!Sdl.forcefeedback}Force feedback}}
-    {- {{!Sdl.audio}Audio}
+    {- {{!Sdl.forcefeedback_}Force feedback}}
+    {- {{!Sdl.audio_}Audio}
     {ul
-    {- {{!Sdl.audiodrivers}Audio drivers}}
-    {- {{!Sdl.audiodevices}Audio devices}}
+    {- {{!Sdl.audiodrivers_}Audio drivers}}
+    {- {{!Sdl.audiodevices_}Audio devices}}
     }}
-    {- {{!Sdl.timer}Timer}}
-    {- {!Sdl.platform}}
-    {- {{!Sdl.power}Power}}
-    {- {!Sdl.coverage}}}
+    {- {{!Sdl.timer_}Timer}}
+    {- {!Sdl.platform_}}
+    {- {{!Sdl.power_}Power}}
+    {- {!Sdl.coverage_}}}
 *)
 module Sdl : sig
 
@@ -94,10 +94,8 @@ type 'a result = ('a, [ `Msg of string ]) Result.result
 (** The type for function results. In the error case,
     the string is what {!Sdl.get_error} returned. *)
 
-(** {1:basics Basics} *)
-
-(** {2:init {{:http://wiki.libsdl.org/CategoryInit}
-             Initialization and shutdown}} *)
+(** {1:basics_ Basics} *)
+(** {2:init_ {{:http://wiki.libsdl.org/CategoryInit}Initialization and shutdown}} *)
 
 module Init : sig
   type t
@@ -139,11 +137,9 @@ val quit_sub_system : Init.t -> unit
 val was_init : Init.t option -> Init.t
 (** {{:http://wiki.libsdl.org/SDL_WasInit}SDL_WasInit} *)
 
-(** {2:hints {{:http://wiki.libsdl.org/CategoryHints}Hints}} *)
+(** {2:hints_ {{:http://wiki.libsdl.org/CategoryHints}Hints}} *)
 
 module Hint : sig
-
-  (** {1:hint Hints} *)
 
   type t = string
 
@@ -198,7 +194,7 @@ val set_hint_with_priority : Hint.t -> string -> Hint.priority -> bool
 (** {{:http://wiki.libsdl.org/SDL_SetHintWithPriority}
     SDL_SetHintWithPriority} *)
 
-(** {2:errors {{:http://wiki.libsdl.org/CategoryError}Errors}} *)
+(** {2:errors_ {{:http://wiki.libsdl.org/CategoryError}Errors}} *)
 
 val clear_error : unit -> unit
 (** {{:http://wiki.libsdl.org/SDL_ClearError}SDL_ClearError} *)
@@ -209,7 +205,7 @@ val get_error : unit -> string
 val set_error : ('b, Format.formatter, unit) format -> 'b
 (** {{:http://wiki.libsdl.org/SDL_SetError}SDL_SetError} *)
 
-(** {2:log {{:http://wiki.libsdl.org/CategoryLog}Log}} *)
+(** {2:log_ {{:http://wiki.libsdl.org/CategoryLog}Log}} *)
 
 module Log : sig
 
@@ -275,7 +271,7 @@ val log_verbose : Log.category -> ('b, Format.formatter, unit) format -> 'b
 val log_warn : Log.category -> ('b, Format.formatter, unit) format -> 'b
 (** {{:http://wiki.libsdl.org/SDL_LogWarn}SDL_LogWarn} *)
 
-(** {2:version {{:http://wiki.libsdl.org/CategoryVersion}Version}} *)
+(** {2:version_ {{:http://wiki.libsdl.org/CategoryVersion}Version}} *)
 
 val get_version : unit -> (int * int * int)
 (** {{:http://wiki.libsdl.org/SDL_GetVersion}SDL_GetVersion} *)
@@ -286,9 +282,8 @@ val get_revision : unit -> string
 val get_revision_number : unit -> int
 (** {{:http://wiki.libsdl.org/SDL_GetRevisionNumber}SDL_GetRevisionNumber} *)
 
-(** {1:fileabstraction Files and IO abstraction} *)
-
-(** {2:io {{:https://wiki.libsdl.org/CategoryIO}IO abstraction}} *)
+(** {1:fileabstraction_ Files and IO abstraction} *)
+(** {2:io_ {{:https://wiki.libsdl.org/CategoryIO}IO abstraction}} *)
 
 type rw_ops
 (** {{:https://wiki.libsdl.org/SDL_RWops}SDL_RWops} *)
@@ -299,12 +294,10 @@ val rw_from_file : string -> string -> rw_ops result
 val rw_close : rw_ops -> unit result
 (** {{:https://wiki.libsdl.org/SDL_RWclose}SDL_RWclose} *)
 
-(**/**)
 val unsafe_rw_ops_of_ptr : nativeint -> rw_ops
 val unsafe_ptr_of_rw_ops : rw_ops -> nativeint
-(**/**)
 
-(** {1:fspaths {{:https://wiki.libsdl.org/CategoryFilesystem}Filesystem
+(** {2:fspaths_ {{:https://wiki.libsdl.org/CategoryFilesystem}Filesystem
     Paths}} *)
 
 val get_base_path : unit -> string result
@@ -313,17 +306,15 @@ val get_base_path : unit -> string result
 val get_pref_path : org:string -> app:string -> string result
 (** {{:https://wiki.libsdl.org/SDL_GetPrefPath}SDL_GetPrefPath} *)
 
-(** {1:video Video} *)
+(** {1:video_ Video} *)
 
 type window
 (** SDL_Window *)
 
-(**/**)
 val unsafe_window_of_ptr : nativeint -> window
 val unsafe_ptr_of_window : window -> nativeint
-(**/**)
 
-(** {2:colors Colors} *)
+(** {2:colors_ Colors} *)
 
 type color
 (** {{:http://wiki.libsdl.org/SDL_Rect}SDL_Color} *)
@@ -340,7 +331,7 @@ module Color : sig
   val set_a : color -> uint8 -> unit
 end
 
-(** {2:points Points} *)
+(** {2:points_ Points} *)
 
 type point
 (** {{:http://wiki.libsdl.org/SDL_Point}SDL_Point} *)
@@ -353,7 +344,7 @@ module Point : sig
   val set_y : point -> int -> unit
 end
 
-(** {2:rectangles
+(** {2:rectangles_
     {{:http://wiki.libsdl.org/CategoryRect}Rectangles}} *)
 
 type rect
@@ -404,7 +395,7 @@ val rect_equals : rect -> rect -> bool
 val union_rect : rect -> rect -> rect
 (** {{:http://wiki.libsdl.org/SDL_UnionRect}SDL_UnionRect} *)
 
-(** {2:palettes {{:http://wiki.libsdl.org/CategoryPixels}Palettes}} *)
+(** {2:palettes_ {{:http://wiki.libsdl.org/CategoryPixels}Palettes}} *)
 
 type palette
 (** {{:https://wiki.libsdl.org/SDL_Palette}SDL_Palette} *)
@@ -438,12 +429,10 @@ val set_palette_colors_ba : palette ->
     @raise Invalid_argument if the length of the array is not
     a multiple of 4. *)
 
-(**/**)
 val unsafe_palette_of_ptr : nativeint -> palette
 val unsafe_ptr_of_palette : palette -> nativeint
-(**/**)
 
-(** {2:pixel_formats {{:http://wiki.libsdl.org/CategoryPixels}Pixels
+(** {2:pixel_formats_ {{:http://wiki.libsdl.org/CategoryPixels}Pixels
     formats}} *)
 
 type gamma_ramp = (int, Bigarray.int16_unsigned_elt) bigarray
@@ -556,12 +545,10 @@ val set_pixel_format_palette : pixel_format -> palette -> unit result
     {b Note} If you allocated the palette with {!alloc_palette} you
     can {!free_palette} after. *)
 
-(**/**)
 val unsafe_pixel_format_of_ptr : nativeint -> pixel_format
 val unsafe_ptr_of_pixel_format : pixel_format -> nativeint
-(**/**)
 
-(** {2:surfaces
+(** {2:surfaces_
     {{:http://wiki.libsdl.org/CategorySurface}Surface}} *)
 
 type surface
@@ -647,6 +634,7 @@ val get_surface_format_enum : surface -> Pixel.format_enum
 (** [get_surface_format_neum s] is the pixel format enum of the
     field [format] of [s]. *)
 
+(* SAN *)
 val get_surface_format : surface -> pixel_format
 (** format field of the surface. Warning, memory ownership problem ? *)
 
@@ -723,12 +711,10 @@ val unlock_surface : surface -> unit
 val must_lock : surface -> bool
 (** {{:http://wiki.libsdl.org/SDL_MUSTLOCK}SDL_MUSTLOCK} *)
 
-(**/**)
 val unsafe_surface_of_ptr : nativeint -> surface
 val unsafe_ptr_of_surface : surface -> nativeint
-(**/**)
 
-(** {2:renderers {{:http://wiki.libsdl.org/CategoryRender}Renderers}} *)
+(** {2:renderers_ {{:http://wiki.libsdl.org/CategoryRender}Renderers}} *)
 
 type flip
 (** {{:https://wiki.libsdl.org/SDL_RendererFlip}SDL_RendererFlip} *)
@@ -745,17 +731,13 @@ end
 type texture
 (** SDL_Texture *)
 
-(**/**)
 val unsafe_texture_of_ptr : nativeint -> texture
 val unsafe_ptr_of_texture : texture -> nativeint
-(**/**)
 
 type renderer
 
-(**/**)
 val unsafe_renderer_of_ptr : nativeint -> renderer
 val unsafe_ptr_of_renderer : renderer -> nativeint
-(**/**)
 
 (** SDL_Renderer *)
 
@@ -943,7 +925,7 @@ val set_render_draw_color : renderer -> uint8 -> uint8 -> uint8 -> uint8 ->
 val set_render_target : renderer -> texture option -> unit result
 (** {{:http://wiki.libsdl.org/SDL_SetRenderTarget}SDL_SetRenderTarget} *)
 
-(** {2:textures {{:http://wiki.libsdl.org/CategoryRender}Textures}} *)
+(** {2:textures_ {{:http://wiki.libsdl.org/CategoryRender}Textures}} *)
 
 module Texture : sig
   type access
@@ -1020,7 +1002,7 @@ val update_yuv_texture : texture -> rect option ->
   v:(int, Bigarray.int8_unsigned_elt) bigarray -> int -> unit result
 (** {{:http://wiki.libsdl.org/SDL_UpdateYUVTexture}SDL_UpdateYUVTexture} *)
 
-(** {2:videodrivers {{:http://wiki.libsdl.org/CategoryVideo}Video drivers}} *)
+(** {2:videodrivers_ {{:http://wiki.libsdl.org/CategoryVideo}Video drivers}} *)
 
 val get_current_video_driver : unit -> string option
 (** {{:http://wiki.libsdl.org/SDL_GetCurrentVideoDriver}
@@ -1038,7 +1020,7 @@ val video_init : string option -> unit result
 val video_quit : unit -> unit
 (** {{:http://wiki.libsdl.org/SDL_VideoQuit}SDL_VideoQuit} *)
 
-(** {2:displays {{:http://wiki.libsdl.org/CategoryVideo}Displays}} *)
+(** {2:displays_ {{:http://wiki.libsdl.org/CategoryVideo}Displays}} *)
 
 type driverdata
 (** {b Note.} Nothing can be done with that. *)
@@ -1080,7 +1062,7 @@ val get_num_video_displays : unit -> int result
 (** {{:http://wiki.libsdl.org/SDL_GetNumVideoDisplays}
     SDL_GetNumVideoDisplays} *)
 
-(** {2:windows {{:http://wiki.libsdl.org/CategoryVideo}Windows}} *)
+(** {2:windows_ {{:http://wiki.libsdl.org/CategoryVideo}Windows}} *)
 
 module Window : sig
 
@@ -1268,14 +1250,12 @@ val update_window_surface_rects_ba : window ->
     @raise Invalid_argument if the length of the array is not
     a multiple of 4. *)
 
-(** {2:opengl {{:http://wiki.libsdl.org/CategoryVideo}OpenGL contexts}} *)
+(** {2:opengl_ {{:http://wiki.libsdl.org/CategoryVideo}OpenGL contexts}} *)
 
 type gl_context
 
-(**/**)
 val unsafe_gl_context_of_ptr : nativeint -> gl_context
 val unsafe_ptr_of_gl_context : gl_context -> nativeint
-(**/**)
 
 (** SDL_GLContext *)
 
@@ -1376,7 +1356,7 @@ val gl_unbind_texture : texture -> unit result
     {b Warning} Segfaults on SDL 2.0.1
     see {{:https://bugzilla.libsdl.org/show_bug.cgi?id=2296}this report}.*)
 
-(** {2:screensaver Screen saver} *)
+(** {2:screensaver_ Screen saver} *)
 
 val disable_screen_saver : unit -> unit
 (** {{:http://wiki.libsdl.org/SDL_DisableScreenSaver}SDL_DisableScreenSaver} *)
@@ -1388,7 +1368,7 @@ val is_screen_saver_enabled : unit -> bool
 (** {{:http://wiki.libsdl.org/SDL_IsScreenSaverEnabled}
     SDL_IsScreenSaverEnabled} *)
 
-(** {2:messageboxes Message boxes} *)
+(** {2:messageboxes_ Message boxes} *)
 
 module Message_box : sig
 
@@ -1453,7 +1433,7 @@ val has_clipboard_text : unit -> bool
 val set_clipboard_text : string -> unit result
 (** {{:http://wiki.libsdl.org/SDL_SetClipboardText}SDL_SetClipboardText} *)
 
-(** {1:input Input} *)
+(** {1:input_ Input} *)
 
 type button_state
 val pressed : button_state
@@ -1463,7 +1443,7 @@ type toggle_state
 val disable : toggle_state
 val enable : toggle_state
 
-(** {2:keyboard {{:http://wiki.libsdl.org/CategoryKeyboard}Keyboard}} *)
+(** {2:keyboard_ {{:http://wiki.libsdl.org/CategoryKeyboard}Keyboard}} *)
 
 type scancode = int
 (** {{:http://wiki.libsdl.org/SDL_Scancode}SDL_Scancode} *)
@@ -2075,14 +2055,12 @@ val start_text_input : unit -> unit
 val stop_text_input : unit -> unit
 (** {{:http://wiki.libsdl.org/SDL_StopTextInput}SDL_StopTextInput} *)
 
-(** {2:mouse {{:http://wiki.libsdl.org/CategoryMouse}Mouse}} *)
+(** {2:mouse_ {{:http://wiki.libsdl.org/CategoryMouse}Mouse}} *)
 
 type cursor
 
-(**/**)
 val unsafe_cursor_of_ptr : nativeint -> cursor
 val unsafe_ptr_of_cursor : cursor -> nativeint
-(**/**)
 
 (** SDL_Cursor *)
 
@@ -2168,7 +2146,7 @@ val show_cursor : bool -> bool result
 val warp_mouse_in_window : window option -> x:int -> y:int -> unit
 (** {{:http://wiki.libsdl.org/SDL_WarpMouseInWindow}SDL_WarpMouseInWindow} *)
 
-(** {2:touch Touch and gestures} *)
+(** {2:touch_ Touch and gestures} *)
 
 type touch_id = int64
 (** SDL_TouchID *)
@@ -2218,7 +2196,7 @@ val save_all_dollar_templates : rw_ops -> unit result
 (** {{:https://wiki.libsdl.org/SDL_SaveAllDollarTemplate}
     SDL_SaveAllDollarTemplate}.*)
 
-(** {2:joystick {{:http://wiki.libsdl.org/CategoryJoystick}Joystick}} *)
+(** {2:joystick_ {{:http://wiki.libsdl.org/CategoryJoystick}Joystick}} *)
 
 type joystick_guid
 (** SDL_JoystickGUID. *)
@@ -2228,10 +2206,8 @@ type joystick_id = int32
 
 type joystick
 
-(**/**)
 val unsafe_joystick_of_ptr : nativeint -> joystick
 val unsafe_ptr_of_joystick : joystick -> nativeint
-(**/**)
 
 (** SDL_Joystick *)
 
@@ -2321,15 +2297,13 @@ val joystick_update : unit -> unit
 val num_joysticks : unit -> int result
 (** {{:http://wiki.libsdl.org/SDL_NumJoysticks}SDL_NumJoysticks} *)
 
-(** {2:gamecontroller
+(** {2:gamecontroller_
   {{:http://wiki.libsdl.org/CategoryGameController}Game controller}} *)
 
 type game_controller
 
-(**/**)
 val unsafe_game_controller_of_ptr : nativeint -> game_controller
 val unsafe_ptr_of_game_controller : game_controller -> nativeint
-(**/**)
 
 (** SDL_GameController *)
 
@@ -2470,7 +2444,7 @@ val game_controller_update : unit -> unit
 val is_game_controller : int -> bool
 (**  {{:http://wiki.libsdl.org/SDL_IsGameController}SDL_IsGameController} *)
 
-(** {2:events {{:http://wiki.libsdl.org/CategoryEvents}Events}} *)
+(** {2:events_ {{:http://wiki.libsdl.org/CategoryEvents}Events}} *)
 
 type event_type = int
 (** {{:http://wiki.libsdl.org/SDL_EventType}SDL_EventType}.
@@ -2855,7 +2829,7 @@ val wait_event : event option -> unit result
 val wait_event_timeout : event option -> int -> bool
 (** {{:http://wiki.libsdl.org/SDL_WaitEventTimeout}SDL_WaitEventTimeout} *)
 
-(** {1:forcefeedback
+(** {1:forcefeedback_
     {{:http://wiki.libsdl.org/CategoryForceFeedback}Force Feedback}} *)
 
 type haptic
@@ -3142,7 +3116,7 @@ val mouse_is_haptic : unit -> bool result
 val num_haptics : unit -> int result
 (** {{:http://wiki.libsdl.org/SDL_NumHaptics}SDL_NumHaptics} *)
 
-(** {1:audio {{:http://wiki.libsdl.org/CategoryAudio}Audio}} *)
+(** {1:audio_ {{:http://wiki.libsdl.org/CategoryAudio}Audio}} *)
 
 module Audio : sig
 
@@ -3189,7 +3163,7 @@ module Audio : sig
   val allow_any_change : int
 end
 
-(** {2:audiodrivers Audio drivers} *)
+(** {2:audiodrivers_ Audio drivers} *)
 
 val audio_init : string option -> unit result
 (** {{:http://wiki.libsdl.org/SDL_AudioInit}
@@ -3211,7 +3185,7 @@ val get_num_audio_drivers : unit -> int result
 (** {{:http://wiki.libsdl.org/SDL_GetNumAudioDrivers}
     SDL_GetNumAudioDrivers} *)
 
-(** {2:audiodevices Audio devices} *)
+(** {2:audiodevices_ Audio devices} *)
 
 type audio_device_id
 
@@ -3290,7 +3264,7 @@ val convert_audio : audio_cvt -> ('a, 'b) bigarray -> unit
     SDL_ConvertAudio}. The bigarray has the source and destination *)
 *)
 
-(** {1:timer {{:http://wiki.libsdl.org/CategoryTimer}Timer}} *)
+(** {1:timer_ {{:http://wiki.libsdl.org/CategoryTimer}Timer}} *)
 
 val delay : uint32 -> unit
 (** {{:http://wiki.libsdl.org/SDL_Delay}SDL_Delay} *)
@@ -3306,7 +3280,7 @@ val get_performance_frequency : unit -> uint64
 (** {{:http://wiki.libsdl.org/SDL_GetPerformanceFrequency}
     SDL_GetPerformanceFrequency} *)
 
-(** {1:platform Platform and CPU information} *)
+(** {1:platform_ Platform and CPU information} *)
 
 val get_platform : unit -> string
 (** {{:http://wiki.libsdl.org/SDL_GetPlatform}SDL_GetPlatform} *)
@@ -3351,7 +3325,7 @@ val has_sse41 : unit -> bool
 val has_sse42 : unit -> bool
 (** {{:http://wiki.libsdl.org/SDL_HasSSE3}SDL_HasSSE42} *)
 
-(** {1:power {{:http://wiki.libsdl.org/CategoryPower}Power}} *)
+(** {1:power_ {{:http://wiki.libsdl.org/CategoryPower}Power}} *)
 
 type power_state =
   [ `Unknown | `On_battery | `No_battery | `Charging | `Charged ]
@@ -3365,7 +3339,7 @@ type power_info =
 val get_power_info : unit -> power_info
 (** {{:http://wiki.libsdl.org/SDL_GetPowerInfo}SDL_GetPowerInfo} *)
 
-(**     {1:coverage Binding Coverage}
+(**     {1:coverage_ Binding Coverage}
 
     Everything except the following functions/categories are available.
 
