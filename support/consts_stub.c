@@ -179,6 +179,12 @@ void consts (FILE *fd)
   int_v (SDL_TEXTUREMODULATE_COLOR);
   int_v (SDL_TEXTUREMODULATE_ALPHA);
 
+  /* Scale mode */
+
+  int_v (SDL_ScaleModeNearest);
+  int_v (SDL_ScaleModeLinear);
+  int_v (SDL_ScaleModeBest);
+
   /* Windows and displays */
 
   int_v (SDL_WINDOW_FULLSCREEN);
@@ -199,8 +205,10 @@ void consts (FILE *fd)
   int_v (SDL_WINDOW_ALWAYS_ON_TOP);
   int_v (SDL_WINDOW_SKIP_TASKBAR);
   int_v (SDL_WINDOW_UTILITY);
+  int_v (SDL_WINDOW_TOOLTIP);
   int_v (SDL_WINDOW_POPUP_MENU);
   int_v (SDL_WINDOW_VULKAN);
+  int_v (SDL_WINDOW_METAL);
 
   int_v (SDL_WINDOWPOS_CENTERED);
   int_v (SDL_WINDOWPOS_UNDEFINED);
@@ -888,6 +896,7 @@ void consts (FILE *fd)
   int_v (SDL_APP_DIDENTERBACKGROUND);
   int_v (SDL_APP_WILLENTERFOREGROUND);
   int_v (SDL_APP_DIDENTERFOREGROUND);
+  int_v (SDL_LOCALECHANGED);
   int_v (SDL_DISPLAYEVENT);
   int_v (SDL_WINDOWEVENT);
   int_v (SDL_SYSWMEVENT);

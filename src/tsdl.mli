@@ -556,6 +556,15 @@ val compose_custom_blend_mode :
 (** {{:https://wiki.libsdl.org/SDL2/SDL_ComposeCustomBlendMode}
     SDL_ComposeCustomBlendMode} *)
 
+module Scale : sig
+   type mode
+   (** {{:https://wiki.libsdl.org/SDL2/SDL_ScaleMode}SDL_ScaleMode} *)
+
+   val mode_nearest : mode
+   val mode_linear : mode
+   val mode_best : mode
+end
+
 module Pixel : sig
   type format_enum
   (** {{:https://wiki.libsdl.org/SDL2/SDL_PixelFormatEnum}
@@ -1063,6 +1072,9 @@ val render_is_clip_enabled: renderer -> bool
 (** {{:http://wiki.libsdl.org/SDL2/SDL_RenderIsClipEnabled}
     SDL_RenderIsClipEnabled} *)
 
+val render_get_window : renderer -> window result
+(** {{:https://wiki.libsdl.org/SDL2/SDL_RenderGetWindow}SDL_RenderGetWindow} *)
+
 val render_present : renderer -> unit
 (** {{:http://wiki.libsdl.org/SDL2/SDL_RenderPresent}SDL_RenderPresent} *)
 
@@ -1148,6 +1160,10 @@ val get_texture_color_mod : texture -> (uint8 * uint8 * uint8) result
 (** {{:http://wiki.libsdl.org/SDL2/SDL_GetTextureColorMod}
     SDL_GetTextureColorMod}. *)
 
+val get_texture_scale_mode : texture -> Scale.mode result
+(** {{:http://wiki.libsdl.org/SDL2/SDL_GetTextureScaleMode}
+    SDL_GetTextureScaleMode} *)
+
 val lock_texture :
   texture -> rect option -> ('a, 'b) Bigarray.kind ->
   (('a, 'b) bigarray * int) result
@@ -1172,6 +1188,10 @@ val set_texture_blend_mode : texture -> Blend.mode -> unit result
 val set_texture_color_mod : texture -> uint8 -> uint8 -> uint8 -> unit result
 (** {{:http://wiki.libsdl.org/SDL2/SDL_SetTextureColorMod}
     SDL_SetTextureColorMod} *)
+
+val set_texture_scale_mode : texture -> Scale.mode -> unit result
+(** {{:http://wiki.libsdl.org/SDL2/SDL_SetTextureScaleMode}
+    SDL_SetTextureScaleMode} *)
 
 val unlock_texture : texture -> unit
 (** {{:http://wiki.libsdl.org/SDL2/SDL_UnlockTexture}SDL_UnlockTexture} *)
@@ -1307,10 +1327,12 @@ module Window : sig
   val allow_highdpi : flags
   val mouse_capture: flags
   val always_on_top: flags
-    val skip_taskbar: flags
+  val skip_taskbar: flags
   val utility: flags
+  val tooltip : flags
   val popup_menu:flags
   val vulkan: flags
+  val metal: flags
 end
 
 val create_window : string -> ?x:int -> ?y:int -> w:int -> h:int ->
@@ -3199,6 +3221,10 @@ module Event : sig
   val user_window_id : int field
   val user_code : int field
 
+  (** {2:locale Locale} *)
+
+  val locale_changed : event_type
+
   (** {2:display Display events} *)
 
   val display_event : event_type
@@ -3306,7 +3332,7 @@ module Event : sig
   | `Render_targets_reset | `Render_device_reset
   | `Sys_wm_event
   | `Text_editing | `Text_input | `Unknown of int | `User_event
-  | `Window_event | `Display_event | `Sensor_update ]
+  | `Window_event | `Locale_changed | `Display_event | `Sensor_update ]
 
   val enum : event_type -> enum
 end
@@ -3896,6 +3922,16 @@ type power_info =
 
 val get_power_info : unit -> power_info
 (** {{:http://wiki.libsdl.org/SDL2/SDL_GetPowerInfo}SDL_GetPowerInfo} *)
+
+(** {1:locale {{:http://wiki.libsdl.org/SDL2/CategoryLocale}Locale}} *)
+
+type locale = { language : string; country : string option }
+(** The type for
+    {{:https://wiki.libsdl.org/SDL2/SDL_Locale}SDL_Locale}. *)
+
+val get_preferred_locales : unit -> (locale list) result
+(** {{:https://wiki.libsdl.org/SDL2/SDL_GetPreferredLocales}
+    SDL_GetPreferredLocales} *)
 
 (** {1:coverage Binding Coverage}
 

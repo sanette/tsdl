@@ -791,6 +791,13 @@ let compose_custom_blend_mode =
   foreign "SDL_ComposeCustomBlendMode"
     (int @-> int @-> int @-> int @-> int @-> int @-> returning uint)
 
+module Scale = struct
+   type mode = Unsigned.UInt.t
+   let mode_nearest = Unsigned.UInt.of_int sdl_scalemodenearest
+   let mode_linear = Unsigned.UInt.of_int sdl_scalemodelinear
+   let mode_best = Unsigned.UInt.of_int sdl_scalemodebest
+end
+
 module Pixel = struct
   type format_enum = Unsigned.UInt32.t
   let i = Unsigned.UInt32.of_int32
@@ -1616,6 +1623,9 @@ let render_get_viewport rend =
   render_get_viewport rend (addr r);
   r
 
+let render_get_window =
+  foreign "SDL_RenderGetWindow" (renderer @-> returning (some_to_ok window_opt))
+
 let render_present =
   foreign ~release_runtime_lock:true "SDL_RenderPresent"
     (renderer @-> returning void)
@@ -1736,6 +1746,15 @@ let get_texture_color_mod t =
   match get_texture_color_mod t r g b with
   | Ok () -> Ok (get r, get g, get b) | Error _ as e -> e
 
+let get_texture_scale_mode =
+  foreign "SDL_GetTextureScaleMode"
+    (texture @-> ptr uint @-> returning zero_to_ok)
+
+let get_texture_scale_mode t =
+  let m = allocate uint Unsigned.UInt.zero in
+  match get_texture_scale_mode t m with
+  | Ok () -> Ok (!@ m) | Error _ as e -> e
+
 let query_texture =
   foreign "SDL_QueryTexture"
     (texture @-> ptr uint32_t @-> ptr int @-> ptr int @-> ptr int @->
@@ -1792,6 +1811,10 @@ let set_texture_color_mod =
   foreign "SDL_SetTextureColorMod"
     (texture @-> int_as_uint8_t @-> int_as_uint8_t @-> int_as_uint8_t @->
      returning zero_to_ok)
+
+let set_texture_scale_mode =
+  foreign "SDL_SetTextureScaleMode"
+    (texture @-> uint @-> returning zero_to_ok)
 
 let unlock_texture =
   foreign "SDL_UnlockTexture" (texture @-> returning void)
@@ -1984,8 +2007,10 @@ module Window = struct
   let always_on_top = i sdl_window_always_on_top
   let skip_taskbar = i sdl_window_skip_taskbar
   let utility = i sdl_window_utility
+  let tooltip = i sdl_window_tooltip
   let popup_menu = i sdl_window_popup_menu
   let vulkan = i sdl_window_vulkan
+  let metal = i sdl_window_metal
 end
 
 let create_window =
@@ -4449,6 +4474,10 @@ module Event = struct
   let window_event_enum id =
     try Imap.find id enum_of_window_event_id with Not_found -> `Unknown id
 
+  (* Locale changed event *)
+
+  let locale_changed = sdl_localechanged
+
   (* Display event *)
 
   let display_display =
@@ -4528,7 +4557,7 @@ module Event = struct
   | `Render_targets_reset | `Render_device_reset
   | `Sys_wm_event
   | `Text_editing | `Text_input | `Unknown of int | `User_event
-  | `Window_event | `Display_event | `Sensor_update ]
+  | `Window_event | `Locale_changed | `Display_event | `Sensor_update ]
 
   let enum_of_event_type =
     let add acc (k, v) = Imap.add k v acc in
@@ -4579,6 +4608,7 @@ module Event = struct
                   user_event, `User_event;
                   quit, `Quit;
                   window_event, `Window_event;
+                  locale_changed, `Locale_changed;
                   display_event, `Display_event;
                   sensor_update, `Sensor_update; ]
     in
@@ -5393,4 +5423,45 @@ let get_power_info () =
   let pi_secs = match !@ secs with -1 -> None | secs -> Some secs in
   let pi_pct = match !@ pct with -1 -> None | pct -> Some pct in
   { pi_state; pi_secs; pi_pct }
+
+(* Locale information *)
+
+type _sdl_locale
+let sdl_locale : _sdl_locale structure typ = structure "SDL_Locale"
+let language = field sdl_locale "language" (ptr_opt char)
+let country = field sdl_locale "country" (ptr_opt char)
+let () = seal sdl_locale
+
+let get_preferred_locales = foreign "SDL_GetPreferredLocales"
+    (void @-> returning (ptr sdl_locale))
+
+type locale = { language : string; country : string option }
+
+let copy_string p =
+  Ctypes_std_views.string_of_char_ptr p
+  |> Bytes.of_string
+  |> Bytes.to_string
+
+let language l =
+  getf l language |> Option.map copy_string
+let country l =
+  getf l country |> Option.map copy_string
+
+let create_locale_list c_array_ptr =
+  let rec loop list i =
+    let locale_ptr = !@(c_array_ptr +@ i) in
+    match language locale_ptr with
+    | None -> list
+    | Some language ->
+        let country = country locale_ptr in
+        loop ({ language; country } :: list) (i+1)
+  in
+  List.rev (loop [] 0)
+
+let get_preferred_locales () =
+  let p = get_preferred_locales () in
+  if is_null p then error () else
+  let list = create_locale_list p in
+  sdl_free (to_voidp p);
+  Ok list
 end
