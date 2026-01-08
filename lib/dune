@@ -1,0 +1,4 @@
+(library
+ (name tsdl)
+ (public_name tsdl)
+ (libraries ctypes.foreign))
