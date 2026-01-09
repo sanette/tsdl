@@ -366,6 +366,9 @@ let get_version () =
   get_version (addr v);
   (get v version_major), (get v version_minor), (get v version_patch)
 
+let () = let maj, mn, p = get_version () in
+  log "SDL Version (%u,%u,%u)" maj mn p
+
 let get_revision =
   print_endline "SDL_GetRevision"; foreign "SDL_GetRevision" (void @-> returning string)
 
