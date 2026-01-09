@@ -52,11 +52,15 @@ let lib_sdl2 =
                 (* macOS *)
                 trylib "/Library/Frameworks/SDL2.framework/SDL2"
               with _ -> begin try
-                    (* Homebrew on macOS *)
+                    (* Homebrew on macOS Intel *)
                     trylib "/usr/local/lib/libSDL2.dylib"
-                  with _ -> begin
-                      print_endline "Could not find SDL2 library file.";
-                      None
+                  with _ -> begin try
+                        (* Homebrew Apple Silicon (M1/M2/M3) *)
+                        trylib "/opt/homebrew/lib/libSDL2.dylib"
+                      with _ -> begin
+                          print_endline "Could not find SDL2 library file.";
+                          None
+                        end
                     end
                 end
             end
