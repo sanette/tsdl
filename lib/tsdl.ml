@@ -14,6 +14,10 @@ module Sdl = struct
 
 open Tsdl_consts
 
+(* Set this to true to print the foreign symbols in the CI *)
+let debug_symbols = true
+let pre = if debug_symbols then print_endline else ignore
+
 (* Formatting with continuation. *)
 
 let kpp k fmt =
@@ -115,7 +119,7 @@ let string_as_char_array n = (* FIXME: drop this if ctypes proposes better *)
   view ~read ~write n_array
 
 let get_error =
-  print_endline "SDL_GetError"; foreign "SDL_GetError" (void @-> returning string)
+  pre "SDL_GetError"; foreign "SDL_GetError" (void @-> returning string)
 
 (* SDL results *)
 
@@ -143,13 +147,13 @@ let some_to_ok t =
   let read = function Some v -> Ok v | None -> error () in
   view ~read ~write:write_never t
 
-let sdl_free = print_endline "SDL_free"; foreign "SDL_free" (ptr void @-> returning void)
+let sdl_free = pre "SDL_free"; foreign "SDL_free" (ptr void @-> returning void)
 
 (* Since we never let SDL redefine our main make sure this is always
    called. *)
 
 let () =
-  let set_main_ready = print_endline "SDL_SetMainReady"; foreign "SDL_SetMainReady" (void @-> returning void) in
+  let set_main_ready = pre "SDL_SetMainReady"; foreign "SDL_SetMainReady" (void @-> returning void) in
   set_main_ready ()
 
 let stub = true
@@ -226,19 +230,19 @@ module Init = struct
 end
 
 let init =
-  print_endline "SDL_Init"; foreign "SDL_Init" (uint32_t @-> returning zero_to_ok)
+  pre "SDL_Init"; foreign "SDL_Init" (uint32_t @-> returning zero_to_ok)
 
 let init_sub_system =
-  print_endline "SDL_InitSubSystem"; foreign "SDL_InitSubSystem" (uint32_t @-> returning zero_to_ok)
+  pre "SDL_InitSubSystem"; foreign "SDL_InitSubSystem" (uint32_t @-> returning zero_to_ok)
 
 let quit =
-  print_endline "SDL_Quit"; foreign "SDL_Quit" (void @-> returning void)
+  pre "SDL_Quit"; foreign "SDL_Quit" (void @-> returning void)
 
 let quit_sub_system =
-  print_endline "SDL_QuitSubSystem"; foreign "SDL_QuitSubSystem" (uint32_t @-> returning void)
+  pre "SDL_QuitSubSystem"; foreign "SDL_QuitSubSystem" (uint32_t @-> returning void)
 
 let was_init =
-  print_endline "SDL_WasInit"; foreign "SDL_WasInit" (uint32_t @-> returning uint32_t)
+  pre "SDL_WasInit"; foreign "SDL_WasInit" (uint32_t @-> returning uint32_t)
 
 let was_init = function
 | None -> was_init (Unsigned.UInt32.of_int 0)
@@ -274,28 +278,28 @@ module Hint = struct
 end
 
 let clear_hints =
-  print_endline "SDL_ClearHints"; foreign "SDL_ClearHints" (void @-> returning void)
+  pre "SDL_ClearHints"; foreign "SDL_ClearHints" (void @-> returning void)
 
 let get_hint =
-  print_endline "SDL_GetHint"; foreign "SDL_GetHint" (string @-> returning string_opt)
+  pre "SDL_GetHint"; foreign "SDL_GetHint" (string @-> returning string_opt)
 
 let get_hint_boolean =
-  print_endline "SDL_GetHintBoolean"; foreign "SDL_GetHintBoolean" (string @-> bool @-> returning bool)
+  pre "SDL_GetHintBoolean"; foreign "SDL_GetHintBoolean" (string @-> bool @-> returning bool)
 
 let set_hint =
-  print_endline "SDL_SetHint"; foreign "SDL_SetHint" (string @-> string @-> returning bool)
+  pre "SDL_SetHint"; foreign "SDL_SetHint" (string @-> string @-> returning bool)
 
 let set_hint_with_priority =
-  print_endline "SDL_SetHintWithPriority"; foreign "SDL_SetHintWithPriority"
+  pre "SDL_SetHintWithPriority"; foreign "SDL_SetHintWithPriority"
     (string @-> string @-> int @-> returning bool)
 
 (* Errors *)
 
 let clear_error =
-  print_endline "SDL_ClearError"; foreign "SDL_ClearError" (void @-> returning void)
+  pre "SDL_ClearError"; foreign "SDL_ClearError" (void @-> returning void)
 
 let set_error =
-  print_endline "SDL_SetError"; foreign "SDL_SetError" (string @-> returning int)
+  pre "SDL_SetError"; foreign "SDL_SetError" (string @-> returning int)
 
 let set_error fmt =
   kpp (fun s -> ignore (set_error s)) fmt
@@ -324,7 +328,7 @@ module Log = struct
 end
 
 let log_message =
-  print_endline "SDL_LogMessage"; foreign "SDL_LogMessage" (int @-> int @-> string @-> returning void)
+  pre "SDL_LogMessage"; foreign "SDL_LogMessage" (int @-> int @-> string @-> returning void)
 
 (* external log_message : int -> int -> string -> unit = "ocaml_tsdl_log_message" *)
 let log_message c p fmt = kpp (fun s -> log_message c p s) fmt
@@ -338,16 +342,16 @@ let log_verbose c fmt = log_message c Log.priority_verbose fmt
 let log_warn c fmt = log_message c Log.priority_warn fmt
 
 let log_get_priority =
-  print_endline "SDL_LogGetPriority"; foreign "SDL_LogGetPriority" (int @-> returning int)
+  pre "SDL_LogGetPriority"; foreign "SDL_LogGetPriority" (int @-> returning int)
 
 let log_reset_priorities =
-  print_endline "SDL_LogResetPriorities"; foreign "SDL_LogResetPriorities" (void @-> returning void)
+  pre "SDL_LogResetPriorities"; foreign "SDL_LogResetPriorities" (void @-> returning void)
 
 let log_set_all_priority =
-  print_endline "SDL_LogSetAllPriority"; foreign "SDL_LogSetAllPriority" (int @-> returning void)
+  pre "SDL_LogSetAllPriority"; foreign "SDL_LogSetAllPriority" (int @-> returning void)
 
 let log_set_priority =
-  print_endline "SDL_LogSetPriority"; foreign "SDL_LogSetPriority" (int @-> int @-> returning void)
+  pre "SDL_LogSetPriority"; foreign "SDL_LogSetPriority" (int @-> int @-> returning void)
 
 (* Version *)
 
@@ -358,7 +362,7 @@ let version_patch = field version "patch" uint8_t
 let () = seal version
 
 let get_version =
-  print_endline "SDL_GetVersion"; foreign "SDL_GetVersion" (ptr version @-> returning void)
+  pre "SDL_GetVersion"; foreign "SDL_GetVersion" (ptr version @-> returning void)
 
 let get_version () =
   let get v f = Unsigned.UInt8.to_int (getf v f) in
@@ -371,10 +375,10 @@ let sdl2_version = get_version ()
 let () = let a,b,c = sdl2_version in log "SDL Version (%u,%u,%u)" a b c
 
 let get_revision =
-  print_endline "SDL_GetRevision"; foreign "SDL_GetRevision" (void @-> returning string)
+  pre "SDL_GetRevision"; foreign "SDL_GetRevision" (void @-> returning string)
 
 let get_revision_number =
-  print_endline "SDL_GetRevisionNumber"; foreign "SDL_GetRevisionNumber" (void @-> returning int)
+  pre "SDL_GetRevisionNumber"; foreign "SDL_GetRevisionNumber" (void @-> returning int)
 
 (* IO absraction *)
 
@@ -400,25 +404,25 @@ let () = seal rw_ops_struct
 type rw_ops = _rw_ops structure ptr
 
 let load_file_rw =
-  print_endline "SDL_LoadFile_RW"; foreign "SDL_LoadFile_RW"
+  pre "SDL_LoadFile_RW"; foreign "SDL_LoadFile_RW"
     (rw_ops @-> ptr int @-> bool @-> returning (some_to_ok string_opt))
 
 let load_file_rw rw_ops close =
   load_file_rw rw_ops (coerce (ptr void) (ptr int) null) close
 
 let rw_from_file =
-  print_endline "SDL_RWFromFile"; foreign "SDL_RWFromFile"
+  pre "SDL_RWFromFile"; foreign "SDL_RWFromFile"
     (string @-> string @-> returning (some_to_ok rw_ops_opt))
 
 let rw_from_const_mem =
-  print_endline "SDL_RWFromConstMem"; foreign "SDL_RWFromConstMem"
+  pre "SDL_RWFromConstMem"; foreign "SDL_RWFromConstMem"
     (ocaml_string @-> int @-> returning (some_to_ok rw_ops_opt))
 
 let rw_from_const_mem str = rw_from_const_mem
   (ocaml_string_start str) (String.length str)
 
 let rw_from_mem =
-  print_endline "SDL_RWFromMem"; foreign "SDL_RWFromMem"
+  pre "SDL_RWFromMem"; foreign "SDL_RWFromMem"
     (ocaml_bytes @-> int @-> returning (some_to_ok rw_ops_opt))
 
 let rw_from_mem b = rw_from_mem (ocaml_bytes_start b) (Bytes.length b)
@@ -432,7 +436,7 @@ let load_file filename = (* defined as a macro in SDL_rwops.h *)
 (* On Windows (MinGW) SDL_RWclose is not exported as a DLL symbol, it's a macro,
    so we cannonot do this: *)
 (* let rw_close = *)
-(*   print_endline "SDL_RWclose"; foreign "SDL_RWclose" (rw_ops @-> returning int) *)
+(*   pre "SDL_RWclose"; foreign "SDL_RWclose" (rw_ops @-> returning int) *)
 (* let rw_close ops = *)
 (*   if rw_close ops = 0 then Ok () else (error ()) *)
 
@@ -457,7 +461,7 @@ let unsafe_ptr_of_rw_ops rw_ops =
 (* File system paths *)
 
 let get_base_path =
-  print_endline "SDL_GetBasePath"; foreign "SDL_GetBasePath" (void @-> returning (ptr char))
+  pre "SDL_GetBasePath"; foreign "SDL_GetBasePath" (void @-> returning (ptr char))
 
 let get_base_path () =
   let p = get_base_path () in
@@ -466,7 +470,7 @@ let get_base_path () =
   path
 
 let get_pref_path =
-  print_endline "SDL_GetPrefPath"; foreign "SDL_GetPrefPath" (string @-> string @-> returning (ptr char))
+  pre "SDL_GetPrefPath"; foreign "SDL_GetPrefPath" (string @-> string @-> returning (ptr char))
 
 let get_pref_path ~org ~app =
   let p = get_pref_path org app in
@@ -664,7 +668,7 @@ module Frect = struct
 end
 
 let enclose_points =
-  print_endline "SDL_EnclosePoints"; foreign "SDL_EnclosePoints"
+  pre "SDL_EnclosePoints"; foreign "SDL_EnclosePoints"
     (ptr void @-> int @-> ptr rect @-> ptr rect @-> returning bool)
 
 let enclose_points_ba ?clip ps =
@@ -686,14 +690,14 @@ let enclose_points ?clip ps =
   else None
 
 let has_intersection =
-  print_endline "SDL_HasIntersection"; foreign "SDL_HasIntersection"
+  pre "SDL_HasIntersection"; foreign "SDL_HasIntersection"
     (ptr rect @-> ptr rect @-> returning bool)
 
 let has_intersection a b =
   has_intersection (addr a) (addr b)
 
 let intersect_rect =
-  print_endline "SDL_IntersectRect"; foreign "SDL_IntersectRect"
+  pre "SDL_IntersectRect"; foreign "SDL_IntersectRect"
     (ptr rect @-> ptr rect @-> ptr rect @-> returning bool)
 
 let intersect_rect a b =
@@ -701,7 +705,7 @@ let intersect_rect a b =
   if intersect_rect (addr a) (addr b) (addr res) then Some res else None
 
 let intersect_rect_and_line =
-  print_endline "SDL_IntersectRectAndLine"; foreign "SDL_IntersectRectAndLine"
+  pre "SDL_IntersectRectAndLine"; foreign "SDL_IntersectRectAndLine"
     (ptr rect @-> ptr int @-> ptr int @-> ptr int @-> ptr int @->
      returning bool)
 
@@ -723,17 +727,17 @@ let point_in_rect p r =
 
 let rect_empty r =
   (* symbol doesn't exist: SDL_FORCE_INLINE directive
-     print_endline "SDL_RectEmpty"; foreign "SDL_RectEmpty" (ptr rect @-> returning bool) *)
+     pre "SDL_RectEmpty"; foreign "SDL_RectEmpty" (ptr rect @-> returning bool) *)
   Rect.w r <= 0 || Rect.h r <= 0
 
 let rect_equals a b =
   (* symbol doesn't exist: SDL_FORCE_INLINE directive
-    print_endline "SDL_RectEquals"; foreign "SDL_RectEquals" (ptr rect @-> ptr rect @-> returning bool) *)
+    pre "SDL_RectEquals"; foreign "SDL_RectEquals" (ptr rect @-> ptr rect @-> returning bool) *)
   (Rect.x a = Rect.x b) && (Rect.y a = Rect.y b) &&
   (Rect.w a = Rect.w b) && (Rect.h a = Rect.h b)
 
 let union_rect =
-  print_endline "SDL_UnionRect"; foreign "SDL_UnionRect"
+  pre "SDL_UnionRect"; foreign "SDL_UnionRect"
     (ptr rect @-> ptr rect @-> ptr rect @-> returning void)
 
 let union_rect a b =
@@ -762,11 +766,11 @@ let unsafe_ptr_of_palette palette =
   raw_address_of_ptr (to_voidp palette)
 
 let alloc_palette =
-  print_endline "SDL_AllocPalette"; foreign "SDL_AllocPalette"
+  pre "SDL_AllocPalette"; foreign "SDL_AllocPalette"
     (int @-> returning (some_to_ok palette_opt))
 
 let free_palette =
-  print_endline "SDL_FreePalette"; foreign "SDL_FreePalette" (palette @-> returning void)
+  pre "SDL_FreePalette"; foreign "SDL_FreePalette" (palette @-> returning void)
 
 let get_palette_ncolors p =
   getf (!@ p) palette_ncolors
@@ -789,7 +793,7 @@ let get_palette_colors_ba p =
   ba
 
 let set_palette_colors =
-  print_endline "SDL_SetPaletteColors"; foreign "SDL_SetPaletteColors"
+  pre "SDL_SetPaletteColors"; foreign "SDL_SetPaletteColors"
     (palette @-> ptr void @-> int @-> int @-> returning zero_to_ok)
 
 let set_palette_colors_ba p cs ~fst =
@@ -808,7 +812,7 @@ let set_palette_colors p cs ~fst =
 type gamma_ramp = (int, Bigarray.int16_unsigned_elt) bigarray
 
 let calculate_gamma_ramp =
-  print_endline "SDL_CalculateGammaRamp"; foreign "SDL_CalculateGammaRamp"
+  pre "SDL_CalculateGammaRamp"; foreign "SDL_CalculateGammaRamp"
     (float @-> ptr void @-> returning void)
 
 let calculate_gamma_ramp g =
@@ -845,7 +849,7 @@ module Blend = struct
 end
 
 let compose_custom_blend_mode =
-  print_endline "SDL_ComposeCustomBlendMode"; foreign "SDL_ComposeCustomBlendMode"
+  pre "SDL_ComposeCustomBlendMode"; foreign "SDL_ComposeCustomBlendMode"
     (int @-> int @-> int @-> int @-> int @-> int @-> returning uint)
 
 module Scale = struct
@@ -936,14 +940,14 @@ let unsafe_ptr_of_pixel_format pixel_format =
   raw_address_of_ptr (to_voidp pixel_format)
 
 let alloc_format =
-  print_endline "SDL_AllocFormat"; foreign "SDL_AllocFormat"
+  pre "SDL_AllocFormat"; foreign "SDL_AllocFormat"
     (uint32_t @-> returning (some_to_ok pixel_format_opt))
 
 let free_format =
-  print_endline "SDL_FreeFormat"; foreign "SDL_FreeFormat" (pixel_format @-> returning void)
+  pre "SDL_FreeFormat"; foreign "SDL_FreeFormat" (pixel_format @-> returning void)
 
 let get_pixel_format_name =
-  print_endline "SDL_GetPixelFormatName"; foreign "SDL_GetPixelFormatName" (uint32_t @-> returning string)
+  pre "SDL_GetPixelFormatName"; foreign "SDL_GetPixelFormatName" (uint32_t @-> returning string)
 
 let get_pixel_format_format pf =
   getf (!@ pf) pf_format
@@ -955,7 +959,7 @@ let get_pixel_format_bytes_pp pf =
   Unsigned.UInt8.to_int (getf (!@ pf) pf_bytes_per_pixel)
 
 let get_rgb =
-  print_endline "SDL_GetRGB"; foreign "SDL_GetRGB"
+  pre "SDL_GetRGB"; foreign "SDL_GetRGB"
     (int32_as_uint32_t @-> pixel_format @-> ptr uint8_t @->
      ptr uint8_t @-> ptr uint8_t @-> returning void)
 
@@ -967,7 +971,7 @@ let get_rgb pf p =
    to_int (!@ r), to_int (!@ g), to_int (!@ b)
 
 let get_rgba =
-  print_endline "SDL_GetRGBA"; foreign "SDL_GetRGBA"
+  pre "SDL_GetRGBA"; foreign "SDL_GetRGBA"
     (int32_as_uint32_t @-> pixel_format @-> ptr uint8_t @->
      ptr uint8_t @-> ptr uint8_t @-> ptr uint8_t @-> returning void)
 
@@ -979,22 +983,22 @@ let get_rgba pf p =
    to_int (!@ r), to_int (!@ g), to_int (!@ b), to_int (!@ a)
 
 let map_rgb =
-  print_endline "SDL_MapRGB"; foreign "SDL_MapRGB"
+  pre "SDL_MapRGB"; foreign "SDL_MapRGB"
     (pixel_format @-> int_as_uint8_t @-> int_as_uint8_t @-> int_as_uint8_t @->
      returning int32_as_uint32_t)
 
 let map_rgba =
-  print_endline "SDL_MapRGBA"; foreign "SDL_MapRGBA"
+  pre "SDL_MapRGBA"; foreign "SDL_MapRGBA"
     (pixel_format @-> int_as_uint8_t @-> int_as_uint8_t @-> int_as_uint8_t @->
      int_as_uint8_t @-> returning int32_as_uint32_t)
 
 let masks_to_pixel_format_enum =
-  print_endline "SDL_MasksToPixelFormatEnum"; foreign "SDL_MasksToPixelFormatEnum"
+  pre "SDL_MasksToPixelFormatEnum"; foreign "SDL_MasksToPixelFormatEnum"
     (int @-> int32_as_uint32_t @-> int32_as_uint32_t @-> int32_as_uint32_t @->
      int32_as_uint32_t @-> returning uint32_t)
 
 let pixel_format_enum_to_masks =
-  print_endline "SDL_PixelFormatEnumToMasks"; foreign "SDL_PixelFormatEnumToMasks"
+  pre "SDL_PixelFormatEnumToMasks"; foreign "SDL_PixelFormatEnumToMasks"
     (uint32_t @-> ptr int @->
      ptr uint32_t @-> ptr uint32_t @-> ptr uint32_t @-> ptr uint32_t @->
      returning bool)
@@ -1008,7 +1012,7 @@ let pixel_format_enum_to_masks pf =
   Ok (!@ bpp, get rm, get gm, get bm, get am)
 
 let set_pixel_format_palette =
-  print_endline "SDL_SetPixelFormatPalette"; foreign "SDL_SetPixelFormatPalette"
+  pre "SDL_SetPixelFormatPalette"; foreign "SDL_SetPixelFormatPalette"
     (pixel_format @-> palette @-> returning zero_to_ok)
 
 (* Surface *)
@@ -1041,7 +1045,7 @@ let unsafe_ptr_of_surface surface =
 
 let blit_scaled =
   (* SDL_BlitScaled is #ifdef'd to SDL_UpperBlitScaled *)
-  print_endline "SDL_UpperBlitScaled"; foreign "SDL_UpperBlitScaled"
+  pre "SDL_UpperBlitScaled"; foreign "SDL_UpperBlitScaled"
     (surface @-> ptr rect @-> surface @-> ptr rect @-> returning zero_to_ok)
 
 let blit_scaled ~src sr ~dst dr =
@@ -1049,14 +1053,14 @@ let blit_scaled ~src sr ~dst dr =
 
 let blit_surface =
   (* SDL_BlitSurface is #ifdef'd to SDL_UpperBlit *)
-  print_endline "SDL_UpperBlit"; foreign "SDL_UpperBlit"
+  pre "SDL_UpperBlit"; foreign "SDL_UpperBlit"
     (surface @-> ptr rect @-> surface @-> ptr rect @-> returning zero_to_ok)
 
 let blit_surface ~src sr ~dst dr =
   blit_surface src (Rect.opt_addr sr) dst (Rect.opt_addr dr)
 
 let convert_pixels =
-  print_endline "SDL_ConvertPixels"; foreign "SDL_ConvertPixels"
+  pre "SDL_ConvertPixels"; foreign "SDL_ConvertPixels"
     (int @-> int @-> uint32_t @-> ptr void @-> int @-> uint32_t @->
      ptr void @-> int @-> returning zero_to_ok)
 
@@ -1069,7 +1073,7 @@ let convert_pixels ~w ~h ~src sp spitch ~dst dp dpitch =
   convert_pixels w h src sp spitch dst dp dpitch
 
 let convert_surface =
-  print_endline "SDL_ConvertSurface"; foreign "SDL_ConvertSurface"
+  pre "SDL_ConvertSurface"; foreign "SDL_ConvertSurface"
     (surface @-> pixel_format @-> uint32_t @->
      returning (some_to_ok surface_opt))
 
@@ -1077,14 +1081,14 @@ let convert_surface s pf =
   convert_surface s pf Unsigned.UInt32.zero
 
 let convert_surface_format =
-  print_endline "SDL_ConvertSurfaceFormat"; foreign "SDL_ConvertSurfaceFormat"
+  pre "SDL_ConvertSurfaceFormat"; foreign "SDL_ConvertSurfaceFormat"
     (surface @-> uint32_t @-> uint32_t @-> returning (some_to_ok surface_opt))
 
 let convert_surface_format s pf =
   convert_surface_format s pf Unsigned.UInt32.zero
 
 let create_rgb_surface =
-  print_endline "SDL_CreateRGBSurface"; foreign "SDL_CreateRGBSurface"
+  pre "SDL_CreateRGBSurface"; foreign "SDL_CreateRGBSurface"
     (uint32_t @-> int @-> int @-> int @-> int32_as_uint32_t @->
      int32_as_uint32_t @-> int32_as_uint32_t @-> int32_as_uint32_t @->
      returning (some_to_ok surface_opt))
@@ -1093,7 +1097,7 @@ let create_rgb_surface ~w ~h ~depth rmask gmask bmask amask =
   create_rgb_surface Unsigned.UInt32.zero w h depth rmask gmask bmask amask
 
 let create_rgb_surface_from =
-  print_endline "SDL_CreateRGBSurfaceFrom"; foreign "SDL_CreateRGBSurfaceFrom"
+  pre "SDL_CreateRGBSurfaceFrom"; foreign "SDL_CreateRGBSurfaceFrom"
     (ptr void @-> int @-> int @-> int @-> int @-> int32_as_uint32_t @->
      int32_as_uint32_t @-> int32_as_uint32_t @-> int32_as_uint32_t @->
      returning (some_to_ok surface_opt))
@@ -1105,7 +1109,7 @@ let create_rgb_surface_from p ~w ~h ~depth ~pitch rmask gmask bmask amask =
   create_rgb_surface_from p w h depth pitch rmask gmask bmask amask
 
 let create_rgb_surface_with_format =
-  print_endline "SDL_CreateRGBSurfaceWithFormat"; foreign "SDL_CreateRGBSurfaceWithFormat"
+  pre "SDL_CreateRGBSurfaceWithFormat"; foreign "SDL_CreateRGBSurfaceWithFormat"
     (uint32_t @-> int @-> int @-> int @-> uint32_t @->
      returning (some_to_ok surface_opt))
 
@@ -1113,7 +1117,7 @@ let create_rgb_surface_with_format ~w ~h ~depth format =
   create_rgb_surface_with_format Unsigned.UInt32.zero w h depth format
 
 let create_rgb_surface_with_format_from =
-  print_endline "SDL_CreateRGBSurfaceWithFormatFrom"; foreign "SDL_CreateRGBSurfaceWithFormatFrom"
+  pre "SDL_CreateRGBSurfaceWithFormatFrom"; foreign "SDL_CreateRGBSurfaceWithFormatFrom"
     (ptr void @-> int @-> int @-> int @-> int @-> uint32_t @->
      returning (some_to_ok surface_opt))
 
@@ -1124,17 +1128,17 @@ let create_rgb_surface_with_format_from p ~w ~h ~depth ~pitch format =
   create_rgb_surface_with_format_from p w h depth pitch format
 
 let duplicate_surface =
-  print_endline "SDL_DuplicateSurface"; foreign "SDL_DuplicateSurface" (surface @-> returning surface)
+  pre "SDL_DuplicateSurface"; foreign "SDL_DuplicateSurface" (surface @-> returning surface)
 
 let fill_rect =
-  print_endline "SDL_FillRect"; foreign "SDL_FillRect"
+  pre "SDL_FillRect"; foreign "SDL_FillRect"
     (surface @-> ptr rect @-> int32_as_uint32_t @-> returning zero_to_ok)
 
 let fill_rect s r c =
   fill_rect s (Rect.opt_addr r) c
 
 let fill_rects =
-  print_endline "SDL_FillRects"; foreign "SDL_FillRects"
+  pre "SDL_FillRects"; foreign "SDL_FillRects"
     (surface @-> ptr void @-> int @-> int32_as_uint32_t @->
      returning zero_to_ok)
 
@@ -1150,17 +1154,17 @@ let fill_rects s rs col =
   fill_rects s (to_voidp (CArray.start a)) (CArray.length a) col
 
 let free_surface =
-  print_endline "SDL_FreeSurface"; foreign "SDL_FreeSurface" (surface @-> returning void)
+  pre "SDL_FreeSurface"; foreign "SDL_FreeSurface" (surface @-> returning void)
 
 let get_clip_rect =
-  print_endline "SDL_GetClipRect"; foreign "SDL_GetClipRect" (surface @-> ptr rect @-> returning void)
+  pre "SDL_GetClipRect"; foreign "SDL_GetClipRect" (surface @-> ptr rect @-> returning void)
 
 let get_clip_rect s =
   let r = make rect in
   (get_clip_rect s (addr r); r)
 
 let get_color_key =
-  print_endline "SDL_GetColorKey"; foreign "SDL_GetColorKey"
+  pre "SDL_GetColorKey"; foreign "SDL_GetColorKey"
     (surface @-> ptr uint32_t @-> returning zero_to_ok)
 
 let get_color_key s =
@@ -1169,7 +1173,7 @@ let get_color_key s =
   | Ok () -> Ok (Unsigned.UInt32.to_int32 (!@ key)) | Error _ as e -> e
 
 let get_surface_alpha_mod =
-  print_endline "SDL_GetSurfaceAlphaMod"; foreign "SDL_GetSurfaceAlphaMod"
+  pre "SDL_GetSurfaceAlphaMod"; foreign "SDL_GetSurfaceAlphaMod"
     (surface @-> ptr uint8_t @-> returning zero_to_ok)
 
 let get_surface_alpha_mod s =
@@ -1178,7 +1182,7 @@ let get_surface_alpha_mod s =
   | Ok () -> Ok (Unsigned.UInt8.to_int (!@ alpha)) | Error _ as e -> e
 
 let get_surface_blend_mode =
-  print_endline "SDL_GetSurfaceBlendMode"; foreign "SDL_GetSurfaceBlendMode"
+  pre "SDL_GetSurfaceBlendMode"; foreign "SDL_GetSurfaceBlendMode"
     (surface @-> ptr uint @-> returning zero_to_ok)
 
 let get_surface_blend_mode s =
@@ -1187,7 +1191,7 @@ let get_surface_blend_mode s =
   Ok () -> Ok (!@ mode) | Error _ as e -> e
 
 let get_surface_color_mod =
-  print_endline "SDL_GetSurfaceColorMod"; foreign "SDL_GetSurfaceColorMod"
+  pre "SDL_GetSurfaceColorMod"; foreign "SDL_GetSurfaceColorMod"
     (surface @-> ptr uint8_t @-> ptr uint8_t @-> ptr uint8_t @->
      returning zero_to_ok)
 
@@ -1222,7 +1226,7 @@ let get_surface_size s =
   getf (!@ s) surface_w, getf (!@ s) surface_h
 
 let load_bmp_rw =
-  print_endline "SDL_LoadBMP_RW"; foreign "SDL_LoadBMP_RW"
+  pre "SDL_LoadBMP_RW"; foreign "SDL_LoadBMP_RW"
     (rw_ops @-> bool @-> returning (some_to_ok surface_opt))
 
 let load_bmp_rw rw ~close =
@@ -1235,24 +1239,24 @@ let load_bmp file =
   | Ok rw -> load_bmp_rw rw ~close:true
 
 let lock_surface =
-  print_endline "SDL_LockSurface"; foreign "SDL_LockSurface" (surface @-> returning zero_to_ok)
+  pre "SDL_LockSurface"; foreign "SDL_LockSurface" (surface @-> returning zero_to_ok)
 
 let lower_blit =
-  print_endline "SDL_LowerBlit"; foreign "SDL_LowerBlit"
+  pre "SDL_LowerBlit"; foreign "SDL_LowerBlit"
     (surface @-> ptr rect @-> surface @-> ptr rect @-> returning zero_to_ok)
 
 let lower_blit ~src sr ~dst dr =
   lower_blit src (addr sr) dst (addr dr)
 
 let lower_blit_scaled =
-  print_endline "SDL_LowerBlitScaled"; foreign "SDL_LowerBlitScaled"
+  pre "SDL_LowerBlitScaled"; foreign "SDL_LowerBlitScaled"
     (surface @-> ptr rect @-> surface @-> ptr rect @-> returning zero_to_ok)
 
 let lower_blit_scaled ~src sr ~dst dr =
   lower_blit_scaled src (addr sr) dst (addr dr)
 
 let save_bmp_rw =
-  print_endline "SDL_SaveBMP_RW"; foreign "SDL_SaveBMP_RW"
+  pre "SDL_SaveBMP_RW"; foreign "SDL_SaveBMP_RW"
     (surface @-> rw_ops @-> bool @-> returning zero_to_ok)
 
 let save_bmp_rw s rw ~close =
@@ -1265,37 +1269,37 @@ let save_bmp s file =
   | Ok rw -> save_bmp_rw s rw ~close:true
 
 let set_clip_rect =
-  print_endline "SDL_SetClipRect"; foreign "SDL_SetClipRect" (surface @-> ptr rect @-> returning bool)
+  pre "SDL_SetClipRect"; foreign "SDL_SetClipRect" (surface @-> ptr rect @-> returning bool)
 
 let set_clip_rect s r =
   set_clip_rect s (addr r)
 
 let set_color_key =
-  print_endline "SDL_SetColorKey"; foreign "SDL_SetColorKey"
+  pre "SDL_SetColorKey"; foreign "SDL_SetColorKey"
     (surface @-> bool @-> int32_as_uint32_t @-> returning zero_to_ok)
 
 let set_surface_alpha_mod =
-  print_endline "SDL_SetSurfaceAlphaMod"; foreign "SDL_SetSurfaceAlphaMod"
+  pre "SDL_SetSurfaceAlphaMod"; foreign "SDL_SetSurfaceAlphaMod"
     (surface @-> int_as_uint8_t @-> returning zero_to_ok)
 
 let set_surface_blend_mode =
-  print_endline "SDL_SetSurfaceBlendMode"; foreign "SDL_SetSurfaceBlendMode"
+  pre "SDL_SetSurfaceBlendMode"; foreign "SDL_SetSurfaceBlendMode"
     (surface @-> uint @-> returning zero_to_ok)
 
 let set_surface_color_mod =
-  print_endline "SDL_SetSurfaceColorMod"; foreign "SDL_SetSurfaceColorMod"
+  pre "SDL_SetSurfaceColorMod"; foreign "SDL_SetSurfaceColorMod"
     (surface @-> int_as_uint8_t @-> int_as_uint8_t @-> int_as_uint8_t @->
      returning zero_to_ok)
 
 let set_surface_palette =
-  print_endline "SDL_SetSurfacePalette"; foreign "SDL_SetSurfacePalette"
+  pre "SDL_SetSurfacePalette"; foreign "SDL_SetSurfacePalette"
     (surface @-> palette @-> returning zero_to_ok)
 
 let set_surface_rle =
-  print_endline "SDL_SetSurfaceRLE"; foreign "SDL_SetSurfaceRLE" (surface @-> bool @-> returning zero_to_ok)
+  pre "SDL_SetSurfaceRLE"; foreign "SDL_SetSurfaceRLE" (surface @-> bool @-> returning zero_to_ok)
 
 let unlock_surface =
-  print_endline "SDL_UnlockSurface"; foreign "SDL_UnlockSurface" (surface @-> returning void)
+  pre "SDL_UnlockSurface"; foreign "SDL_UnlockSurface" (surface @-> returning void)
 
 (* Renderers *)
 
@@ -1370,24 +1374,24 @@ let renderer_info_of_c c =
     ri_max_texture_height }
 
 let create_renderer =
-  print_endline "SDL_CreateRenderer"; foreign "SDL_CreateRenderer"
+  pre "SDL_CreateRenderer"; foreign "SDL_CreateRenderer"
     (window @-> int @-> uint32_t @-> returning (some_to_ok renderer_opt))
 
 let create_renderer ?(index = -1) ?(flags = Unsigned.UInt32.zero) w =
   create_renderer w index flags
 
 let create_software_renderer =
-  print_endline "SDL_CreateSoftwareRenderer"; foreign "SDL_CreateSoftwareRenderer"
+  pre "SDL_CreateSoftwareRenderer"; foreign "SDL_CreateSoftwareRenderer"
     (surface @-> returning (some_to_ok renderer_opt))
 
 let destroy_renderer =
-  print_endline "SDL_DestroyRenderer"; foreign "SDL_DestroyRenderer" (renderer @-> returning void)
+  pre "SDL_DestroyRenderer"; foreign "SDL_DestroyRenderer" (renderer @-> returning void)
 
 let get_num_render_drivers =
-  print_endline "SDL_GetNumRenderDrivers"; foreign "SDL_GetNumRenderDrivers" (void @-> returning nat_to_ok)
+  pre "SDL_GetNumRenderDrivers"; foreign "SDL_GetNumRenderDrivers" (void @-> returning nat_to_ok)
 
 let get_render_draw_blend_mode =
-  print_endline "SDL_GetRenderDrawBlendMode"; foreign "SDL_GetRenderDrawBlendMode"
+  pre "SDL_GetRenderDrawBlendMode"; foreign "SDL_GetRenderDrawBlendMode"
     (renderer @-> ptr uint @-> returning zero_to_ok)
 
 let get_render_draw_blend_mode r =
@@ -1396,7 +1400,7 @@ let get_render_draw_blend_mode r =
   | Ok () -> Ok !@m | Error _ as e -> e
 
 let get_render_draw_color =
-  print_endline "SDL_GetRenderDrawColor"; foreign "SDL_GetRenderDrawColor"
+  pre "SDL_GetRenderDrawColor"; foreign "SDL_GetRenderDrawColor"
     (renderer @-> ptr uint8_t @-> ptr uint8_t @-> ptr uint8_t @->
      ptr uint8_t @-> returning zero_to_ok)
 
@@ -1408,7 +1412,7 @@ let get_render_draw_color rend =
   | Ok () -> Ok (get r, get g, get b, get a) | Error _ as e -> e
 
 let get_render_driver_info =
-  print_endline "SDL_GetRenderDriverInfo"; foreign "SDL_GetRenderDriverInfo"
+  pre "SDL_GetRenderDriverInfo"; foreign "SDL_GetRenderDriverInfo"
     (int @-> ptr renderer_info @-> returning zero_to_ok)
 
 let get_render_driver_info i =
@@ -1417,14 +1421,14 @@ let get_render_driver_info i =
   | Ok () -> Ok (renderer_info_of_c info) | Error _ as e -> e
 
 let get_render_target =
-  print_endline "SDL_GetRenderTarget"; foreign "SDL_GetRenderTarget" (renderer @-> returning texture_opt)
+  pre "SDL_GetRenderTarget"; foreign "SDL_GetRenderTarget" (renderer @-> returning texture_opt)
 
 let get_renderer =
-  print_endline "SDL_GetRenderer"; foreign "SDL_GetRenderer"
+  pre "SDL_GetRenderer"; foreign "SDL_GetRenderer"
     (window @-> returning (some_to_ok renderer_opt))
 
 let get_renderer_info =
-  print_endline "SDL_GetRendererInfo"; foreign "SDL_GetRendererInfo"
+  pre "SDL_GetRendererInfo"; foreign "SDL_GetRendererInfo"
     (renderer @-> ptr renderer_info @-> returning zero_to_ok)
 
 let get_renderer_info r =
@@ -1433,7 +1437,7 @@ let get_renderer_info r =
   | Ok () -> Ok (renderer_info_of_c info) | Error _ as e -> e
 
 let get_renderer_output_size =
-  print_endline "SDL_GetRendererOutputSize"; foreign "SDL_GetRendererOutputSize"
+  pre "SDL_GetRendererOutputSize"; foreign "SDL_GetRendererOutputSize"
     (renderer @-> ptr int @-> ptr int @-> returning zero_to_ok)
 
 let get_renderer_output_size r =
@@ -1443,10 +1447,10 @@ let get_renderer_output_size r =
   | Ok () -> Ok (!@ w, !@ h) | Error _ as e -> e
 
 let render_clear =
-  print_endline "SDL_RenderClear"; foreign "SDL_RenderClear" (renderer @-> returning zero_to_ok)
+  pre "SDL_RenderClear"; foreign "SDL_RenderClear" (renderer @-> returning zero_to_ok)
 
 let render_copy =
-  print_endline "SDL_RenderCopy"; foreign "SDL_RenderCopy"
+  pre "SDL_RenderCopy"; foreign "SDL_RenderCopy"
     (renderer @-> texture @-> ptr rect @-> ptr rect @->
      returning zero_to_ok)
 
@@ -1454,7 +1458,7 @@ let render_copy ?src ?dst r t =
   render_copy r t (Rect.opt_addr src) (Rect.opt_addr dst)
 
 let render_copy_ex =
-  print_endline "SDL_RenderCopyEx"; foreign "SDL_RenderCopyEx"
+  pre "SDL_RenderCopyEx"; foreign "SDL_RenderCopyEx"
     (renderer @-> texture @-> ptr rect @-> ptr rect @-> double @->
      ptr point @-> int @-> returning zero_to_ok)
 
@@ -1463,18 +1467,18 @@ let render_copy_ex ?src ?dst r t angle c flip =
     (Point.opt_addr c) flip
 
 let render_draw_line =
-  print_endline "SDL_RenderDrawLine"; foreign "SDL_RenderDrawLine"
+  pre "SDL_RenderDrawLine"; foreign "SDL_RenderDrawLine"
     (renderer @-> int @-> int @-> int @-> int @-> returning zero_to_ok)
 
 let render_draw_line_f =
-  print_endline "SDL_RenderDrawLineF";
+  pre "SDL_RenderDrawLineF";
   if sdl2_version >= (2,0,10)
   then foreign "SDL_RenderDrawLineF"
       (renderer @-> float @-> float @-> float @-> float @-> returning zero_to_ok)
   else fun _ -> failwith "Sdl_RenderDrawLineF not implemented (need SDL >= 2.0.10)"
 
 let render_draw_lines =
-  print_endline "SDL_RenderDrawLines"; foreign "SDL_RenderDrawLines"
+  pre "SDL_RenderDrawLines"; foreign "SDL_RenderDrawLines"
     (renderer @-> ptr void @-> int @-> returning zero_to_ok)
 
 let render_draw_lines_ba r ps =
@@ -1489,11 +1493,11 @@ let render_draw_lines r ps =
   render_draw_lines r (to_voidp (CArray.start a)) (CArray.length a)
 
 let render_draw_point =
-  print_endline "SDL_RenderDrawPoint"; foreign "SDL_RenderDrawPoint"
+  pre "SDL_RenderDrawPoint"; foreign "SDL_RenderDrawPoint"
     (renderer @-> int @-> int @-> returning zero_to_ok)
 
 let render_draw_points =
-  print_endline "SDL_RenderDrawPoints"; foreign "SDL_RenderDrawPoints"
+  pre "SDL_RenderDrawPoints"; foreign "SDL_RenderDrawPoints"
     (renderer @-> ptr void @-> int @-> returning zero_to_ok)
 
 let render_draw_points_ba r ps =
@@ -1508,14 +1512,14 @@ let render_draw_points r ps =
   render_draw_points r (to_voidp (CArray.start a)) (CArray.length a)
 
 let render_draw_point_f =
-  print_endline "SDL_RenderDrawPointF";
+  pre "SDL_RenderDrawPointF";
   if sdl2_version >= (2,0,10)
   then foreign "SDL_RenderDrawPointF"
     (renderer @-> float @-> float @-> returning zero_to_ok)
   else fun _ -> failwith "Sdl_RenderDrawPointF not implemented (need SDL >= 2.0.10)"
 
 let render_draw_points_f =
-  print_endline "SDL_RenderDrawPointsF";
+  pre "SDL_RenderDrawPointsF";
    if sdl2_version >= (2,0,10)
    then foreign "SDL_RenderDrawPointsF"
     (renderer @-> ptr void @-> int @-> returning zero_to_ok)
@@ -1533,14 +1537,14 @@ let render_draw_points_f r ps =
   render_draw_points_f r (to_voidp (CArray.start a)) (CArray.length a)
 
 let render_draw_rect =
-  print_endline "SDL_RenderDrawRect"; foreign "SDL_RenderDrawRect"
+  pre "SDL_RenderDrawRect"; foreign "SDL_RenderDrawRect"
     (renderer @-> ptr rect @-> returning zero_to_ok)
 
 let render_draw_rect rend r =
   render_draw_rect rend (Rect.opt_addr r)
 
 let render_draw_rects =
-  print_endline "SDL_RenderDrawRects"; foreign "SDL_RenderDrawRects"
+  pre "SDL_RenderDrawRects"; foreign "SDL_RenderDrawRects"
     (renderer @-> ptr void @-> int @-> returning zero_to_ok)
 
 let render_draw_rects_ba r rs =
@@ -1555,14 +1559,14 @@ let render_draw_rects r rs =
   render_draw_rects r (to_voidp (CArray.start a)) (CArray.length a)
 
 let render_fill_rect =
-  print_endline "SDL_RenderFillRect"; foreign "SDL_RenderFillRect"
+  pre "SDL_RenderFillRect"; foreign "SDL_RenderFillRect"
     (renderer @-> ptr rect @-> returning zero_to_ok)
 
 let render_fill_rect rend r =
   render_fill_rect rend (Rect.opt_addr r)
 
 let render_fill_rects =
-  print_endline "SDL_RenderFillRects"; foreign "SDL_RenderFillRects"
+  pre "SDL_RenderFillRects"; foreign "SDL_RenderFillRects"
     (renderer @-> ptr void @-> int @-> returning zero_to_ok)
 
 let render_fill_rects_ba r rs =
@@ -1577,7 +1581,7 @@ let render_fill_rects r rs =
   render_fill_rects r (to_voidp (CArray.start a)) (CArray.length a)
 
 let render_geometry =
-  print_endline "SDL_RenderGeometry"; foreign "SDL_RenderGeometry"
+  pre "SDL_RenderGeometry"; foreign "SDL_RenderGeometry"
     (renderer @-> texture @-> ptr void @-> int @-> ptr void @-> int @->
      returning zero_to_ok)
 
@@ -1596,7 +1600,7 @@ let render_geometry ?indices ?texture r vertices =
     r t (to_voidp (CArray.start a1)) (CArray.length a1) a2_ptr a2_len
 
 let render_geometry_raw =
-  print_endline "SDL_RenderGeometryRaw"; foreign "SDL_RenderGeometryRaw"
+  pre "SDL_RenderGeometryRaw"; foreign "SDL_RenderGeometryRaw"
     (renderer @-> texture @->
      ptr void @-> int @->
      ptr void @-> int @->
@@ -1645,7 +1649,7 @@ let render_geometry_raw
     i_ptr i_len i_stride
 
 let render_get_clip_rect =
-  print_endline "SDL_RenderGetClipRect"; foreign "SDL_RenderGetClipRect"
+  pre "SDL_RenderGetClipRect"; foreign "SDL_RenderGetClipRect"
     (renderer @-> ptr rect @-> returning void)
 
 let render_get_clip_rect rend =
@@ -1654,14 +1658,14 @@ let render_get_clip_rect rend =
   r
 
 let render_is_clip_enabled =
-  print_endline "SDL_RenderIsClipEnabled"; foreign "SDL_RenderIsClipEnabled" (renderer @-> returning bool)
+  pre "SDL_RenderIsClipEnabled"; foreign "SDL_RenderIsClipEnabled" (renderer @-> returning bool)
 
 let render_get_integer_scale =
- print_endline "SDL_RenderGetIntegerScale"; foreign "SDL_RenderGetIntegerScale"
+ pre "SDL_RenderGetIntegerScale"; foreign "SDL_RenderGetIntegerScale"
     (renderer @-> returning bool)
 
 let render_get_logical_size =
-  print_endline "SDL_RenderGetLogicalSize"; foreign "SDL_RenderGetLogicalSize"
+  pre "SDL_RenderGetLogicalSize"; foreign "SDL_RenderGetLogicalSize"
     (renderer @-> ptr int @-> ptr int @-> returning void)
 
 let render_get_logical_size r =
@@ -1671,7 +1675,7 @@ let render_get_logical_size r =
   !@ w, !@ h
 
 let render_get_scale =
-  print_endline "SDL_RenderGetScale"; foreign "SDL_RenderGetScale"
+  pre "SDL_RenderGetScale"; foreign "SDL_RenderGetScale"
     (renderer @-> ptr float @-> ptr float @-> returning void)
 
 let render_get_scale r =
@@ -1681,7 +1685,7 @@ let render_get_scale r =
   !@ x, !@ y
 
 let render_get_viewport =
-  print_endline "SDL_RenderGetViewport"; foreign "SDL_RenderGetViewport"
+  pre "SDL_RenderGetViewport"; foreign "SDL_RenderGetViewport"
     (renderer @-> ptr rect @-> returning void)
 
 let render_get_viewport rend =
@@ -1690,17 +1694,17 @@ let render_get_viewport rend =
   r
 
 let render_get_window =
-  print_endline "SDL_RenderGetWindow";
+  pre "SDL_RenderGetWindow";
   if sdl2_version >= (2,0,22)
   then foreign "SDL_RenderGetWindow" (renderer @-> returning (some_to_ok window_opt))
   else fun _ -> failwith "SDL_RenderGetWindow not implemented (need SDL >= 2.0.22)"
 
 let render_present =
-  print_endline "SDL_RenderPresent"; foreign "SDL_RenderPresent" ~release_runtime_lock:true
+  pre "SDL_RenderPresent"; foreign "SDL_RenderPresent" ~release_runtime_lock:true
     (renderer @-> returning void)
 
 let render_read_pixels =
-  print_endline "SDL_RenderReadPixels"; foreign "SDL_RenderReadPixels"
+  pre "SDL_RenderReadPixels"; foreign "SDL_RenderReadPixels"
     (renderer @-> ptr rect @-> uint32_t @-> ptr void @-> int @->
      returning zero_to_ok)
 
@@ -1710,45 +1714,45 @@ let render_read_pixels r rect format pixels pitch =
   render_read_pixels r (Rect.opt_addr rect) format pixels pitch
 
 let render_set_clip_rect =
-  print_endline "SDL_RenderSetClipRect"; foreign "SDL_RenderSetClipRect"
+  pre "SDL_RenderSetClipRect"; foreign "SDL_RenderSetClipRect"
     (renderer @-> ptr rect @-> returning zero_to_ok)
 
 let render_set_clip_rect rend r =
   render_set_clip_rect rend (Rect.opt_addr r)
 
 let render_set_integer_scale =
-  print_endline "SDL_RenderSetIntegerScale"; foreign "SDL_RenderSetIntegerScale"
+  pre "SDL_RenderSetIntegerScale"; foreign "SDL_RenderSetIntegerScale"
     (renderer @-> bool @-> returning zero_to_ok)
 
 let render_set_logical_size =
-  print_endline "SDL_RenderSetLogicalSize"; foreign "SDL_RenderSetLogicalSize"
+  pre "SDL_RenderSetLogicalSize"; foreign "SDL_RenderSetLogicalSize"
     (renderer @-> int @-> int @-> returning zero_to_ok)
 
 let render_set_scale =
-  print_endline "SDL_RenderSetScale"; foreign "SDL_RenderSetScale"
+  pre "SDL_RenderSetScale"; foreign "SDL_RenderSetScale"
     (renderer @-> float @-> float @-> returning zero_to_ok)
 
 let render_set_viewport =
-  print_endline "SDL_RenderSetViewport"; foreign "SDL_RenderSetViewport"
+  pre "SDL_RenderSetViewport"; foreign "SDL_RenderSetViewport"
     (renderer @-> ptr rect @-> returning zero_to_ok)
 
 let render_set_viewport rend r =
   render_set_viewport rend (Rect.opt_addr r)
 
 let render_target_supported =
-  print_endline "SDL_RenderTargetSupported"; foreign "SDL_RenderTargetSupported" (renderer @-> returning bool)
+  pre "SDL_RenderTargetSupported"; foreign "SDL_RenderTargetSupported" (renderer @-> returning bool)
 
 let set_render_draw_blend_mode =
-  print_endline "SDL_SetRenderDrawBlendMode"; foreign "SDL_SetRenderDrawBlendMode"
+  pre "SDL_SetRenderDrawBlendMode"; foreign "SDL_SetRenderDrawBlendMode"
     (renderer @-> uint @-> returning zero_to_ok)
 
 let set_render_draw_color =
-  print_endline "SDL_SetRenderDrawColor"; foreign "SDL_SetRenderDrawColor"
+  pre "SDL_SetRenderDrawColor"; foreign "SDL_SetRenderDrawColor"
     (renderer @-> int_as_uint8_t @-> int_as_uint8_t @-> int_as_uint8_t @->
      int_as_uint8_t @-> returning zero_to_ok)
 
 let set_render_target =
-  print_endline "SDL_SetRenderTarget"; foreign "SDL_SetRenderTarget"
+  pre "SDL_SetRenderTarget"; foreign "SDL_SetRenderTarget"
     (renderer @-> texture @-> returning zero_to_ok)
 
 let set_render_target r t =
@@ -1771,7 +1775,7 @@ module Texture = struct
 end
 
 let create_texture =
-  print_endline "SDL_CreateTexture"; foreign "SDL_CreateTexture"
+  pre "SDL_CreateTexture"; foreign "SDL_CreateTexture"
     (renderer @-> uint32_t @-> int @-> int @-> int @->
      returning (some_to_ok texture_opt))
 
@@ -1779,14 +1783,14 @@ let create_texture r pf access ~w ~h =
   create_texture r pf access w h
 
 let create_texture_from_surface =
-  print_endline "SDL_CreateTextureFromSurface"; foreign "SDL_CreateTextureFromSurface"
+  pre "SDL_CreateTextureFromSurface"; foreign "SDL_CreateTextureFromSurface"
     (renderer @-> surface @-> returning (some_to_ok texture_opt))
 
 let destroy_texture =
-  print_endline "SDL_DestroyTexture"; foreign "SDL_DestroyTexture" (texture @-> returning void)
+  pre "SDL_DestroyTexture"; foreign "SDL_DestroyTexture" (texture @-> returning void)
 
 let get_texture_alpha_mod =
-  print_endline "SDL_GetTextureAlphaMod"; foreign "SDL_GetTextureAlphaMod"
+  pre "SDL_GetTextureAlphaMod"; foreign "SDL_GetTextureAlphaMod"
     (texture @-> ptr uint8_t @-> returning zero_to_ok)
 
 let get_texture_alpha_mod t =
@@ -1795,7 +1799,7 @@ let get_texture_alpha_mod t =
   | Ok () -> Ok (Unsigned.UInt8.to_int (!@ alpha)) | Error _ as e -> e
 
 let get_texture_blend_mode =
-  print_endline "SDL_GetTextureBlendMode"; foreign "SDL_GetTextureBlendMode"
+  pre "SDL_GetTextureBlendMode"; foreign "SDL_GetTextureBlendMode"
     (texture @-> ptr uint @-> returning zero_to_ok)
 
 let get_texture_blend_mode t =
@@ -1804,7 +1808,7 @@ let get_texture_blend_mode t =
   | Ok () -> Ok (!@ m) | Error _ as e -> e
 
 let get_texture_color_mod =
-  print_endline "SDL_GetTextureColorMod"; foreign "SDL_GetTextureColorMod"
+  pre "SDL_GetTextureColorMod"; foreign "SDL_GetTextureColorMod"
     (texture @-> ptr uint8_t @-> ptr uint8_t @-> ptr uint8_t @->
      returning zero_to_ok)
 
@@ -1816,7 +1820,7 @@ let get_texture_color_mod t =
   | Ok () -> Ok (get r, get g, get b) | Error _ as e -> e
 
 let get_texture_scale_mode =
-  print_endline "SDL_GetTextureScaleMode"; foreign "SDL_GetTextureScaleMode"
+  pre "SDL_GetTextureScaleMode"; foreign "SDL_GetTextureScaleMode"
     (texture @-> ptr uint @-> returning zero_to_ok)
 
 let get_texture_scale_mode t =
@@ -1825,7 +1829,7 @@ let get_texture_scale_mode t =
   | Ok () -> Ok (!@ m) | Error _ as e -> e
 
 let query_texture =
-  print_endline "SDL_QueryTexture"; foreign "SDL_QueryTexture"
+  pre "SDL_QueryTexture"; foreign "SDL_QueryTexture"
     (texture @-> ptr uint32_t @-> ptr int @-> ptr int @-> ptr int @->
      returning zero_to_ok)
 
@@ -1837,7 +1841,7 @@ let _texture_height t =
   | Ok () -> Ok (!@ h) | Error _ as e -> e
 
 let lock_texture =
-  print_endline "SDL_LockTexture"; foreign "SDL_LockTexture"
+  pre "SDL_LockTexture"; foreign "SDL_LockTexture"
     (texture @-> ptr rect @-> ptr (ptr void) @-> ptr int @->
      returning zero_to_ok)
 
@@ -1869,27 +1873,27 @@ let query_texture t =
   | Ok () -> Ok (!@ pf, !@ access, (!@ w, !@ h)) | Error _ as e -> e
 
 let set_texture_alpha_mod =
-  print_endline "SDL_SetTextureAlphaMod"; foreign "SDL_SetTextureAlphaMod"
+  pre "SDL_SetTextureAlphaMod"; foreign "SDL_SetTextureAlphaMod"
     (texture @-> int_as_uint8_t @-> returning zero_to_ok)
 
 let set_texture_blend_mode =
-  print_endline "SDL_SetTextureBlendMode"; foreign "SDL_SetTextureBlendMode"
+  pre "SDL_SetTextureBlendMode"; foreign "SDL_SetTextureBlendMode"
     (texture @-> uint @-> returning zero_to_ok)
 
 let set_texture_color_mod =
-  print_endline "SDL_SetTextureColorMod"; foreign "SDL_SetTextureColorMod"
+  pre "SDL_SetTextureColorMod"; foreign "SDL_SetTextureColorMod"
     (texture @-> int_as_uint8_t @-> int_as_uint8_t @-> int_as_uint8_t @->
      returning zero_to_ok)
 
 let set_texture_scale_mode =
-  print_endline "SDL_SetTextureScaleMode"; foreign "SDL_SetTextureScaleMode"
+  pre "SDL_SetTextureScaleMode"; foreign "SDL_SetTextureScaleMode"
     (texture @-> uint @-> returning zero_to_ok)
 
 let unlock_texture =
-  print_endline "SDL_UnlockTexture"; foreign "SDL_UnlockTexture" (texture @-> returning void)
+  pre "SDL_UnlockTexture"; foreign "SDL_UnlockTexture" (texture @-> returning void)
 
 let update_texture =
-  print_endline "SDL_UpdateTexture"; foreign "SDL_UpdateTexture"
+  pre "SDL_UpdateTexture"; foreign "SDL_UpdateTexture"
     (texture @-> ptr rect @-> ptr void @-> int @-> returning zero_to_ok)
 
 let update_texture t rect pixels pitch =
@@ -1898,7 +1902,7 @@ let update_texture t rect pixels pitch =
   update_texture t (Rect.opt_addr rect) pixels pitch
 
 let update_yuv_texture =
-  print_endline "SDL_UpdateYUVTexture"; foreign "SDL_UpdateYUVTexture"
+  pre "SDL_UpdateYUVTexture"; foreign "SDL_UpdateYUVTexture"
     (texture @-> ptr rect @->
      ptr void @-> int @-> ptr void @-> int @-> ptr void @-> int @->
      returning zero_to_ok)
@@ -1912,19 +1916,19 @@ let update_yuv_texture r rect ~y ypitch ~u upitch ~v vpitch =
 (* Video drivers *)
 
 let get_current_video_driver =
-  print_endline "SDL_GetCurrentVideoDriver"; foreign "SDL_GetCurrentVideoDriver" (void @-> returning string_opt)
+  pre "SDL_GetCurrentVideoDriver"; foreign "SDL_GetCurrentVideoDriver" (void @-> returning string_opt)
 
 let get_num_video_drivers =
-  print_endline "SDL_GetNumVideoDrivers"; foreign "SDL_GetNumVideoDrivers" (void @-> returning nat_to_ok)
+  pre "SDL_GetNumVideoDrivers"; foreign "SDL_GetNumVideoDrivers" (void @-> returning nat_to_ok)
 
 let get_video_driver =
-  print_endline "SDL_GetVideoDriver"; foreign "SDL_GetVideoDriver" (int @-> returning (some_to_ok string_opt))
+  pre "SDL_GetVideoDriver"; foreign "SDL_GetVideoDriver" (int @-> returning (some_to_ok string_opt))
 
 let video_init =
-  print_endline "SDL_VideoInit"; foreign "SDL_VideoInit" (string_opt @-> returning zero_to_ok)
+  pre "SDL_VideoInit"; foreign "SDL_VideoInit" (string_opt @-> returning zero_to_ok)
 
 let video_quit =
-  print_endline "SDL_VideoQuit"; foreign "SDL_VideoQuit" (void @-> returning void)
+  pre "SDL_VideoQuit"; foreign "SDL_VideoQuit" (void @-> returning void)
 
 (* Displays *)
 
@@ -1968,7 +1972,7 @@ let display_mode_of_c c =
   { dm_format; dm_w; dm_h; dm_refresh_rate; dm_driverdata }
 
 let get_closest_display_mode =
-  print_endline "SDL_GetClosestDisplayMode"; foreign "SDL_GetClosestDisplayMode"
+  pre "SDL_GetClosestDisplayMode"; foreign "SDL_GetClosestDisplayMode"
     (int @-> ptr display_mode @-> ptr display_mode @->
        returning (ptr_opt void))
 
@@ -1980,7 +1984,7 @@ let get_closest_display_mode i m =
   | Some _ -> Some (display_mode_of_c closest)
 
 let get_current_display_mode =
-  print_endline "SDL_GetCurrentDisplayMode"; foreign "SDL_GetCurrentDisplayMode"
+  pre "SDL_GetCurrentDisplayMode"; foreign "SDL_GetCurrentDisplayMode"
     (int @-> ptr display_mode @-> returning zero_to_ok)
 
 let get_current_display_mode i =
@@ -1989,7 +1993,7 @@ let get_current_display_mode i =
   | Ok () -> Ok (display_mode_of_c mode) | Error _ as e -> e
 
 let get_desktop_display_mode =
-  print_endline "SDL_GetDesktopDisplayMode"; foreign "SDL_GetDesktopDisplayMode"
+  pre "SDL_GetDesktopDisplayMode"; foreign "SDL_GetDesktopDisplayMode"
     (int @-> ptr display_mode @-> returning zero_to_ok)
 
 let get_desktop_display_mode i =
@@ -1998,7 +2002,7 @@ let get_desktop_display_mode i =
   | Ok () -> Ok (display_mode_of_c mode) | Error _ as e -> e
 
 let get_display_bounds =
-  print_endline "SDL_GetDisplayBounds"; foreign "SDL_GetDisplayBounds"
+  pre "SDL_GetDisplayBounds"; foreign "SDL_GetDisplayBounds"
     (int @-> ptr rect @-> returning zero_to_ok)
 
 let get_display_bounds i =
@@ -2007,7 +2011,7 @@ let get_display_bounds i =
   | Ok () -> Ok r | Error _ as e -> e
 
 let get_display_dpi =
-  print_endline "SDL_GetDisplayDPI"; foreign "SDL_GetDisplayDPI"
+  pre "SDL_GetDisplayDPI"; foreign "SDL_GetDisplayDPI"
     (int @-> ptr float @-> ptr float @-> ptr float @-> returning zero_to_ok)
 
 let get_display_dpi display =
@@ -2019,7 +2023,7 @@ let get_display_dpi display =
   | Error _ as err -> err
 
 let get_display_mode =
-  print_endline "SDL_GetDisplayMode"; foreign "SDL_GetDisplayMode"
+  pre "SDL_GetDisplayMode"; foreign "SDL_GetDisplayMode"
     (int @-> int @-> ptr display_mode @-> returning zero_to_ok)
 
 let get_display_mode d i =
@@ -2028,7 +2032,7 @@ let get_display_mode d i =
   | Ok () -> Ok (display_mode_of_c mode) | Error _ as e -> e
 
 let get_display_usable_bounds =
-  print_endline "SDL_GetDisplayUsableBounds"; foreign "SDL_GetDisplayUsableBounds"
+  pre "SDL_GetDisplayUsableBounds"; foreign "SDL_GetDisplayUsableBounds"
     (int @-> ptr rect @-> returning zero_to_ok)
 
 let get_display_usable_bounds i =
@@ -2037,13 +2041,13 @@ let get_display_usable_bounds i =
   | Ok () -> Ok r | Error _ as e -> e
 
 let get_num_display_modes =
-  print_endline "SDL_GetNumDisplayModes"; foreign "SDL_GetNumDisplayModes" (int @-> returning nat_to_ok)
+  pre "SDL_GetNumDisplayModes"; foreign "SDL_GetNumDisplayModes" (int @-> returning nat_to_ok)
 
 let get_display_name =
-  print_endline "SDL_GetDisplayName"; foreign "SDL_GetDisplayName" (int @-> returning (some_to_ok string_opt))
+  pre "SDL_GetDisplayName"; foreign "SDL_GetDisplayName" (int @-> returning (some_to_ok string_opt))
 
 let get_num_video_displays =
-  print_endline "SDL_GetNumVideoDisplays"; foreign "SDL_GetNumVideoDisplays" (void @-> returning nat_to_ok)
+  pre "SDL_GetNumVideoDisplays"; foreign "SDL_GetNumVideoDisplays" (void @-> returning nat_to_ok)
 
 (* Windows *)
 
@@ -2083,7 +2087,7 @@ module Window = struct
 end
 
 let create_window =
-  print_endline "SDL_CreateWindow"; foreign "SDL_CreateWindow"
+  pre "SDL_CreateWindow"; foreign "SDL_CreateWindow"
     (string @-> int @-> int @-> int @-> int @-> uint32_t @->
      returning (some_to_ok window_opt))
 
@@ -2091,7 +2095,7 @@ let create_window t ?(x = Window.pos_undefined) ?(y = Window.pos_undefined)
     ~w ~h flags = create_window t x y w h flags
 
 let create_window_and_renderer =
-  print_endline "SDL_CreateWindowAndRenderer"; foreign "SDL_CreateWindowAndRenderer"
+  pre "SDL_CreateWindowAndRenderer"; foreign "SDL_CreateWindowAndRenderer"
     (int @-> int @-> uint32_t @-> ptr window @-> ptr renderer @->
      (returning zero_to_ok))
 
@@ -2102,13 +2106,13 @@ let create_window_and_renderer ~w ~h flags =
   | Ok () -> Ok (!@ win, !@ r) | Error _ as e -> e
 
 let destroy_window =
-  print_endline "SDL_DestroyWindow"; foreign "SDL_DestroyWindow" (window @-> returning void)
+  pre "SDL_DestroyWindow"; foreign "SDL_DestroyWindow" (window @-> returning void)
 
 let get_window_brightness =
-  print_endline "SDL_GetWindowBrightness"; foreign "SDL_GetWindowBrightness" (window @-> returning float)
+  pre "SDL_GetWindowBrightness"; foreign "SDL_GetWindowBrightness" (window @-> returning float)
 
 let get_window_borders_size =
-  print_endline "SDL_GetWindowBordersSize"; foreign "SDL_GetWindowBordersSize"
+  pre "SDL_GetWindowBordersSize"; foreign "SDL_GetWindowBordersSize"
     (window @-> ptr int @-> ptr int @-> ptr int @-> ptr int @->
      returning zero_to_ok)
 
@@ -2122,10 +2126,10 @@ let get_window_borders_size w =
   | Error _ as err -> err
 
 let get_window_display_index =
-  print_endline "SDL_GetWindowDisplayIndex"; foreign "SDL_GetWindowDisplayIndex" (window @-> returning nat_to_ok)
+  pre "SDL_GetWindowDisplayIndex"; foreign "SDL_GetWindowDisplayIndex" (window @-> returning nat_to_ok)
 
 let get_window_display_mode =
-  print_endline "SDL_GetWindowDisplayMode"; foreign "SDL_GetWindowDisplayMode"
+  pre "SDL_GetWindowDisplayMode"; foreign "SDL_GetWindowDisplayMode"
     (window @-> (ptr display_mode) @-> returning int)
 
 let get_window_display_mode w =
@@ -2134,14 +2138,14 @@ let get_window_display_mode w =
   | 0 -> Ok (display_mode_of_c mode) | _err -> error ()
 
 let get_window_flags =
-  print_endline "SDL_GetWindowFlags"; foreign "SDL_GetWindowFlags" (window @-> returning uint32_t)
+  pre "SDL_GetWindowFlags"; foreign "SDL_GetWindowFlags" (window @-> returning uint32_t)
 
 let get_window_from_id =
-  print_endline "SDL_GetWindowFromID"; foreign "SDL_GetWindowFromID"
+  pre "SDL_GetWindowFromID"; foreign "SDL_GetWindowFromID"
     (int_as_uint32_t @-> returning (some_to_ok window_opt))
 
 let get_window_gamma_ramp =
-  print_endline "SDL_GetWindowGammaRamp"; foreign "SDL_GetWindowGammaRamp"
+  pre "SDL_GetWindowGammaRamp"; foreign "SDL_GetWindowGammaRamp"
     (window @-> ptr void @-> ptr void @-> ptr void @-> returning zero_to_ok)
 
 let get_window_gamma_ramp w =
@@ -2152,16 +2156,16 @@ let get_window_gamma_ramp w =
   | Ok () -> Ok (r, g, b) | Error _ as e -> e
 
 let get_window_grab =
-  print_endline "SDL_GetWindowGrab"; foreign "SDL_GetWindowGrab" (window @-> returning bool)
+  pre "SDL_GetWindowGrab"; foreign "SDL_GetWindowGrab" (window @-> returning bool)
 
 let get_grabbed_window =
-  print_endline "SDL_GetGrabbedWindow"; foreign "SDL_GetGrabbedWindow" (void @-> returning window)
+  pre "SDL_GetGrabbedWindow"; foreign "SDL_GetGrabbedWindow" (void @-> returning window)
 
 let get_window_id =
-  print_endline "SDL_GetWindowID"; foreign "SDL_GetWindowID" (window @-> returning int_as_uint32_t)
+  pre "SDL_GetWindowID"; foreign "SDL_GetWindowID" (window @-> returning int_as_uint32_t)
 
 let get_window_maximum_size =
-  print_endline "SDL_GetWindowMaximumSize"; foreign "SDL_GetWindowMaximumSize"
+  pre "SDL_GetWindowMaximumSize"; foreign "SDL_GetWindowMaximumSize"
     (window @-> (ptr int) @-> (ptr int) @-> returning void)
 
 let get_window_maximum_size win =
@@ -2171,7 +2175,7 @@ let get_window_maximum_size win =
   !@ w, !@ h
 
 let get_window_minimum_size =
-  print_endline "SDL_GetWindowMinimumSize"; foreign "SDL_GetWindowMinimumSize"
+  pre "SDL_GetWindowMinimumSize"; foreign "SDL_GetWindowMinimumSize"
     (window @-> (ptr int) @-> (ptr int) @-> returning void)
 
 let get_window_minimum_size win =
@@ -2181,7 +2185,7 @@ let get_window_minimum_size win =
   !@ w, !@ h
 
 let get_window_opacity =
-  print_endline "SDL_GetWindowOpacity"; foreign "SDL_GetWindowOpacity"
+  pre "SDL_GetWindowOpacity"; foreign "SDL_GetWindowOpacity"
     (window @-> (ptr float) @-> returning zero_to_ok)
 
 let get_window_opacity win =
@@ -2191,10 +2195,10 @@ let get_window_opacity win =
   | Error _ as e -> e
 
 let get_window_pixel_format =
-  print_endline "SDL_GetWindowPixelFormat"; foreign "SDL_GetWindowPixelFormat" (window @-> returning uint32_t)
+  pre "SDL_GetWindowPixelFormat"; foreign "SDL_GetWindowPixelFormat" (window @-> returning uint32_t)
 
 let get_window_position =
-  print_endline "SDL_GetWindowPosition"; foreign "SDL_GetWindowPosition"
+  pre "SDL_GetWindowPosition"; foreign "SDL_GetWindowPosition"
     (window @-> (ptr int) @-> (ptr int) @-> returning void)
 
 let get_window_position win =
@@ -2204,7 +2208,7 @@ let get_window_position win =
   !@ x, !@ y
 
 let get_window_size =
-  print_endline "SDL_GetWindowSize"; foreign "SDL_GetWindowSize"
+  pre "SDL_GetWindowSize"; foreign "SDL_GetWindowSize"
     (window @-> (ptr int) @-> (ptr int) @-> returning void)
 
 let get_window_size win =
@@ -2214,36 +2218,36 @@ let get_window_size win =
   !@ w, !@ h
 
 let get_window_surface =
-  print_endline "SDL_GetWindowSurface"; foreign "SDL_GetWindowSurface"
+  pre "SDL_GetWindowSurface"; foreign "SDL_GetWindowSurface"
     (window @-> returning (some_to_ok surface_opt))
 
 let get_window_title =
-  print_endline "SDL_GetWindowTitle"; foreign "SDL_GetWindowTitle" (window @-> returning string)
+  pre "SDL_GetWindowTitle"; foreign "SDL_GetWindowTitle" (window @-> returning string)
 
 let hide_window =
-  print_endline "SDL_HideWindow"; foreign "SDL_HideWindow" (window @-> returning void)
+  pre "SDL_HideWindow"; foreign "SDL_HideWindow" (window @-> returning void)
 
 let maximize_window =
-  print_endline "SDL_MaximizeWindow"; foreign "SDL_MaximizeWindow" (window @-> returning void)
+  pre "SDL_MaximizeWindow"; foreign "SDL_MaximizeWindow" (window @-> returning void)
 
 let minimize_window =
-  print_endline "SDL_MinimizeWindow"; foreign "SDL_MinimizeWindow" (window @-> returning void)
+  pre "SDL_MinimizeWindow"; foreign "SDL_MinimizeWindow" (window @-> returning void)
 
 let raise_window =
-  print_endline "SDL_RaiseWindow"; foreign "SDL_RaiseWindow" (window @-> returning void)
+  pre "SDL_RaiseWindow"; foreign "SDL_RaiseWindow" (window @-> returning void)
 
 let restore_window =
-  print_endline "SDL_RestoreWindow"; foreign "SDL_RestoreWindow" (window @-> returning void)
+  pre "SDL_RestoreWindow"; foreign "SDL_RestoreWindow" (window @-> returning void)
 
 let set_window_bordered =
-  print_endline "SDL_SetWindowBordered"; foreign "SDL_SetWindowBordered" (window @-> bool @-> returning void)
+  pre "SDL_SetWindowBordered"; foreign "SDL_SetWindowBordered" (window @-> bool @-> returning void)
 
 let set_window_brightness =
-  print_endline "SDL_SetWindowBrightness"; foreign "SDL_SetWindowBrightness"
+  pre "SDL_SetWindowBrightness"; foreign "SDL_SetWindowBrightness"
     (window @-> float @-> returning zero_to_ok)
 
 let set_window_display_mode =
-  print_endline "SDL_SetWindowDisplayMode"; foreign "SDL_SetWindowDisplayMode"
+  pre "SDL_SetWindowDisplayMode"; foreign "SDL_SetWindowDisplayMode"
     (window @-> (ptr display_mode) @-> returning zero_to_ok)
 
 let set_window_display_mode w m =
@@ -2251,11 +2255,11 @@ let set_window_display_mode w m =
   set_window_display_mode w (addr mode)
 
 let set_window_fullscreen =
-  print_endline "SDL_SetWindowFullscreen"; foreign "SDL_SetWindowFullscreen"
+  pre "SDL_SetWindowFullscreen"; foreign "SDL_SetWindowFullscreen"
     (window @-> uint32_t @-> returning zero_to_ok)
 
 let set_window_gamma_ramp =
-  print_endline "SDL_SetWindowGammaRamp"; foreign "SDL_SetWindowGammaRamp"
+  pre "SDL_SetWindowGammaRamp"; foreign "SDL_SetWindowGammaRamp"
     (window @-> ptr void @-> ptr void @-> ptr void @->
      returning zero_to_ok)
 
@@ -2264,63 +2268,63 @@ let set_window_gamma_ramp w r g b =
   set_window_gamma_ramp w (ramp_ptr r) (ramp_ptr g) (ramp_ptr b)
 
 let set_window_grab =
-  print_endline "SDL_SetWindowGrab"; foreign "SDL_SetWindowGrab" (window @-> bool @-> returning void)
+  pre "SDL_SetWindowGrab"; foreign "SDL_SetWindowGrab" (window @-> bool @-> returning void)
 
 let set_window_icon =
-  print_endline "SDL_SetWindowIcon"; foreign "SDL_SetWindowIcon" (window @-> surface @-> returning void)
+  pre "SDL_SetWindowIcon"; foreign "SDL_SetWindowIcon" (window @-> surface @-> returning void)
 
 let set_window_input_focus =
-  print_endline "SDL_SetWindowInputFocus"; foreign "SDL_SetWindowInputFocus" (window @-> returning zero_to_ok)
+  pre "SDL_SetWindowInputFocus"; foreign "SDL_SetWindowInputFocus" (window @-> returning zero_to_ok)
 
 let set_window_maximum_size =
-  print_endline "SDL_SetWindowMaximumSize"; foreign "SDL_SetWindowMaximumSize"
+  pre "SDL_SetWindowMaximumSize"; foreign "SDL_SetWindowMaximumSize"
     (window @-> int @-> int @-> returning void)
 
 let set_window_maximum_size win ~w ~h =
   set_window_maximum_size win w h
 
 let set_window_minimum_size =
-  print_endline "SDL_SetWindowMinimumSize"; foreign "SDL_SetWindowMinimumSize"
+  pre "SDL_SetWindowMinimumSize"; foreign "SDL_SetWindowMinimumSize"
     (window @-> int @-> int @-> returning void)
 
 let set_window_minimum_size win ~w ~h =
   set_window_minimum_size win w h
 
 let set_window_modal_for =
-  print_endline "SDL_SetWindowModalFor"; foreign "SDL_SetWindowModalFor" ( window @-> window @-> returning zero_to_ok)
+  pre "SDL_SetWindowModalFor"; foreign "SDL_SetWindowModalFor" ( window @-> window @-> returning zero_to_ok)
 
 let set_window_modal_for ~modal ~parent = set_window_modal_for modal parent
 
 let set_window_opacity =
-  print_endline "SDL_SetWindowOpacity"; foreign "SDL_SetWindowOpacity" ( window @-> float @-> returning zero_to_ok)
+  pre "SDL_SetWindowOpacity"; foreign "SDL_SetWindowOpacity" ( window @-> float @-> returning zero_to_ok)
 
 let set_window_position =
-  print_endline "SDL_SetWindowPosition"; foreign "SDL_SetWindowPosition"
+  pre "SDL_SetWindowPosition"; foreign "SDL_SetWindowPosition"
     (window @-> int @-> int @-> returning void)
 
 let set_window_position win ~x ~y =
   set_window_position win x y
 
 let set_window_resizable =
-  print_endline "SDL_SetWindowResizable"; foreign "SDL_SetWindowResizable" (window @-> bool @-> returning void)
+  pre "SDL_SetWindowResizable"; foreign "SDL_SetWindowResizable" (window @-> bool @-> returning void)
 
 let set_window_size =
-  print_endline "SDL_SetWindowSize"; foreign "SDL_SetWindowSize" (window @-> int @-> int @-> returning void)
+  pre "SDL_SetWindowSize"; foreign "SDL_SetWindowSize" (window @-> int @-> int @-> returning void)
 
 let set_window_size win ~w ~h =
   set_window_size win w h
 
 let set_window_title =
-  print_endline "SDL_SetWindowTitle"; foreign "SDL_SetWindowTitle" (window @-> string @-> returning void)
+  pre "SDL_SetWindowTitle"; foreign "SDL_SetWindowTitle" (window @-> string @-> returning void)
 
 let show_window =
-  print_endline "SDL_ShowWindow"; foreign "SDL_ShowWindow" (window @-> returning void)
+  pre "SDL_ShowWindow"; foreign "SDL_ShowWindow" (window @-> returning void)
 
 let update_window_surface =
-  print_endline "SDL_UpdateWindowSurface"; foreign "SDL_UpdateWindowSurface" (window @-> returning zero_to_ok)
+  pre "SDL_UpdateWindowSurface"; foreign "SDL_UpdateWindowSurface" (window @-> returning zero_to_ok)
 
 let update_window_surface_rects =
-  print_endline "SDL_UpdateWindowSurfaceRects"; foreign "SDL_UpdateWindowSurfaceRects"
+  pre "SDL_UpdateWindowSurfaceRects"; foreign "SDL_UpdateWindowSurfaceRects"
     (window @-> ptr void @-> int @-> returning zero_to_ok)
 
 let update_window_surface_rects_ba w rs =
@@ -2386,7 +2390,7 @@ module Gl = struct
 end
 
 let gl_bind_texture =
-  print_endline "SDL_GL_BindTexture"; foreign "SDL_GL_BindTexture"
+  pre "SDL_GL_BindTexture"; foreign "SDL_GL_BindTexture"
     (texture @-> ptr float @-> ptr float @-> returning zero_to_ok)
 
 let gl_bind_texture t =
@@ -2396,17 +2400,17 @@ let gl_bind_texture t =
   | Ok () -> Ok (!@ w, !@ h) | Error _ as e -> e
 
 let gl_create_context =
-  print_endline "SDL_GL_CreateContext"; foreign "SDL_GL_CreateContext"
+  pre "SDL_GL_CreateContext"; foreign "SDL_GL_CreateContext"
     (window @-> returning (some_to_ok gl_context_opt))
 
 let gl_delete_context =
-  print_endline "SDL_GL_DeleteContext"; foreign "SDL_GL_DeleteContext" (gl_context @-> returning void)
+  pre "SDL_GL_DeleteContext"; foreign "SDL_GL_DeleteContext" (gl_context @-> returning void)
 
 let gl_extension_supported =
-  print_endline "SDL_GL_ExtensionSupported"; foreign "SDL_GL_ExtensionSupported" (string @-> returning bool)
+  pre "SDL_GL_ExtensionSupported"; foreign "SDL_GL_ExtensionSupported" (string @-> returning bool)
 
 let gl_get_attribute =
-  print_endline "SDL_GL_GetAttribute"; foreign "SDL_GL_GetAttribute" (int @-> (ptr int) @-> returning int)
+  pre "SDL_GL_GetAttribute"; foreign "SDL_GL_GetAttribute" (int @-> (ptr int) @-> returning int)
 
 let gl_get_attribute att =
   let value = allocate int 0 in
@@ -2414,11 +2418,11 @@ let gl_get_attribute att =
   | 0 -> Ok (!@ value) | _err -> error ()
 
 let gl_get_current_context =
-  print_endline "SDL_GL_GetCurrentContext"; foreign "SDL_GL_GetCurrentContext"
+  pre "SDL_GL_GetCurrentContext"; foreign "SDL_GL_GetCurrentContext"
     (void @-> returning (some_to_ok gl_context_opt))
 
 let gl_get_drawable_size =
-  print_endline "SDL_GL_GetDrawableSize"; foreign "SDL_GL_GetDrawableSize"
+  pre "SDL_GL_GetDrawableSize"; foreign "SDL_GL_GetDrawableSize"
     (window @-> ptr int @-> ptr int @-> returning void)
 
 let gl_get_drawable_size win =
@@ -2432,26 +2436,26 @@ let int_to_ok =
   view ~read ~write:write_never int
 
 let gl_get_swap_interval =
-  print_endline "SDL_GL_GetSwapInterval"; foreign "SDL_GL_GetSwapInterval" (void @-> returning int_to_ok)
+  pre "SDL_GL_GetSwapInterval"; foreign "SDL_GL_GetSwapInterval" (void @-> returning int_to_ok)
 
 let gl_make_current =
-  print_endline "SDL_GL_MakeCurrent"; foreign "SDL_GL_MakeCurrent"
+  pre "SDL_GL_MakeCurrent"; foreign "SDL_GL_MakeCurrent"
     (window @-> gl_context @-> returning zero_to_ok)
 
 let gl_reset_attributes =
-  print_endline "SDL_GL_ResetAttributes"; foreign "SDL_GL_ResetAttributes" ~stub (void @-> returning void)
+  pre "SDL_GL_ResetAttributes"; foreign "SDL_GL_ResetAttributes" ~stub (void @-> returning void)
 
 let gl_set_attribute =
-  print_endline "SDL_GL_SetAttribute"; foreign "SDL_GL_SetAttribute" (int @-> int @-> returning zero_to_ok)
+  pre "SDL_GL_SetAttribute"; foreign "SDL_GL_SetAttribute" (int @-> int @-> returning zero_to_ok)
 
 let gl_set_swap_interval =
-  print_endline "SDL_GL_SetSwapInterval"; foreign "SDL_GL_SetSwapInterval" (int @-> returning zero_to_ok)
+  pre "SDL_GL_SetSwapInterval"; foreign "SDL_GL_SetSwapInterval" (int @-> returning zero_to_ok)
 
 let gl_swap_window =
-  print_endline "SDL_GL_SwapWindow"; foreign "SDL_GL_SwapWindow" (window @-> returning void)
+  pre "SDL_GL_SwapWindow"; foreign "SDL_GL_SwapWindow" (window @-> returning void)
 
 let gl_unbind_texture =
-  print_endline "SDL_GL_UnbindTexture"; foreign "SDL_GL_UnbindTexture" (texture @-> returning zero_to_ok)
+  pre "SDL_GL_UnbindTexture"; foreign "SDL_GL_UnbindTexture" (texture @-> returning zero_to_ok)
 
 (* Vulkan *)
 
@@ -2468,13 +2472,13 @@ module Vulkan = struct
   let unsafe_surface_of_uint64 x = x
 
   let load_library =
-    print_endline "SDL_Vulkan_LoadLibrary"; foreign "SDL_Vulkan_LoadLibrary" (string_opt @-> returning zero_to_ok)
+    pre "SDL_Vulkan_LoadLibrary"; foreign "SDL_Vulkan_LoadLibrary" (string_opt @-> returning zero_to_ok)
 
   let unload_library =
-    print_endline "SDL_Vulkan_UnloadLibrary"; foreign "SDL_Vulkan_UnloadLibrary" (void @-> returning void)
+    pre "SDL_Vulkan_UnloadLibrary"; foreign "SDL_Vulkan_UnloadLibrary" (void @-> returning void)
 
   let get_instance_extensions =
-    print_endline "SDL_Vulkan_GetInstanceExtensions"; foreign "SDL_Vulkan_GetInstanceExtensions"
+    pre "SDL_Vulkan_GetInstanceExtensions"; foreign "SDL_Vulkan_GetInstanceExtensions"
       (window @-> ptr int @-> ptr string @-> returning bool)
 
   let get_instance_extensions window =
@@ -2489,7 +2493,7 @@ module Vulkan = struct
         | true -> Some CArray.(to_list @@ from_ptr exts (!@n))
 
   let create_surface =
-    print_endline "SDL_Vulkan_CreateSurface"; foreign "SDL_Vulkan_CreateSurface"
+    pre "SDL_Vulkan_CreateSurface"; foreign "SDL_Vulkan_CreateSurface"
       (window @-> instance @-> ptr surface @-> returning bool)
 
   let create_surface window instance =
@@ -2500,7 +2504,7 @@ module Vulkan = struct
     None
 
   let get_drawable_size =
-    print_endline "SDL_Vulkan_GetDrawableSize"; foreign "SDL_Vulkan_GetDrawableSize"
+    pre "SDL_Vulkan_GetDrawableSize"; foreign "SDL_Vulkan_GetDrawableSize"
       (window @-> ptr int @-> ptr int @-> returning void)
 
   let get_drawable_size window =
@@ -2513,13 +2517,13 @@ end
 (* Screen saver *)
 
 let disable_screen_saver =
-  print_endline "SDL_DisableScreenSaver"; foreign "SDL_DisableScreenSaver" (void @-> returning void)
+  pre "SDL_DisableScreenSaver"; foreign "SDL_DisableScreenSaver" (void @-> returning void)
 
 let enable_screen_saver =
-  print_endline "SDL_EnableScreenSaver"; foreign "SDL_EnableScreenSaver" (void @-> returning void)
+  pre "SDL_EnableScreenSaver"; foreign "SDL_EnableScreenSaver" (void @-> returning void)
 
 let is_screen_saver_enabled =
-  print_endline "SDL_IsScreenSaverEnabled"; foreign "SDL_IsScreenSaverEnabled" (void @-> returning bool)
+  pre "SDL_IsScreenSaverEnabled"; foreign "SDL_IsScreenSaverEnabled" (void @-> returning bool)
 
 (* Message boxes *)
 
@@ -2633,7 +2637,7 @@ module Message_box = struct
 end
 
 let show_message_box =
-  print_endline "SDL_ShowMessageBox"; foreign "SDL_ShowMessageBox"
+  pre "SDL_ShowMessageBox"; foreign "SDL_ShowMessageBox"
     (ptr Message_box.data @-> ptr int @-> returning zero_to_ok)
 
 let show_message_box d =
@@ -2643,7 +2647,7 @@ let show_message_box d =
   | Ok () -> Ok (!@ ret) | Error _ as e -> e
 
 let show_simple_message_box =
-  print_endline "SDL_ShowSimpleMessageBox"; foreign "SDL_ShowSimpleMessageBox"
+  pre "SDL_ShowSimpleMessageBox"; foreign "SDL_ShowSimpleMessageBox"
     (uint32_t @-> string @-> string @-> window_opt @-> returning zero_to_ok)
 
 let show_simple_message_box t ~title msg w =
@@ -2652,7 +2656,7 @@ let show_simple_message_box t ~title msg w =
 (* Clipboard *)
 
 let get_clipboard_text =
-  print_endline "SDL_GetClipboardText"; foreign "SDL_GetClipboardText" (void @-> returning (ptr char))
+  pre "SDL_GetClipboardText"; foreign "SDL_GetClipboardText" (void @-> returning (ptr char))
 
 let get_clipboard_text () =
   let p = get_clipboard_text () in
@@ -2667,10 +2671,10 @@ let get_clipboard_text () =
   Ok (Buffer.contents b)
 
 let has_clipboard_text =
-  print_endline "SDL_HasClipboardText"; foreign "SDL_HasClipboardText" (void @-> returning bool)
+  pre "SDL_HasClipboardText"; foreign "SDL_HasClipboardText" (void @-> returning bool)
 
 let set_clipboard_text =
-  print_endline "SDL_SetClipboardText"; foreign "SDL_SetClipboardText" (string @-> returning zero_to_ok)
+  pre "SDL_SetClipboardText"; foreign "SDL_SetClipboardText" (string @-> returning zero_to_ok)
 
 (* Input *)
 
@@ -3249,10 +3253,10 @@ module Kmod = struct
 end
 
 let get_keyboard_focus =
-  print_endline "SDL_GetKeyboardFocus"; foreign "SDL_GetKeyboardFocus" (void @-> returning window_opt)
+  pre "SDL_GetKeyboardFocus"; foreign "SDL_GetKeyboardFocus" (void @-> returning window_opt)
 
 let get_keyboard_state =
-  print_endline "SDL_GetKeyboardState"; foreign "SDL_GetKeyboardState" (ptr int @-> returning (ptr int))
+  pre "SDL_GetKeyboardState"; foreign "SDL_GetKeyboardState" (ptr int @-> returning (ptr int))
 
 let get_keyboard_state () =
   let count = allocate int 0 in
@@ -3260,49 +3264,49 @@ let get_keyboard_state () =
   bigarray_of_ptr array1 (!@ count) Bigarray.int8_unsigned p
 
 let get_key_from_name =
-  print_endline "SDL_GetKeyFromName"; foreign "SDL_GetKeyFromName" (string @-> returning keycode)
+  pre "SDL_GetKeyFromName"; foreign "SDL_GetKeyFromName" (string @-> returning keycode)
 
 let get_key_from_scancode =
-  print_endline "SDL_GetKeyFromScancode"; foreign "SDL_GetKeyFromScancode" (scancode @-> returning keycode)
+  pre "SDL_GetKeyFromScancode"; foreign "SDL_GetKeyFromScancode" (scancode @-> returning keycode)
 
 let get_key_name =
-  print_endline "SDL_GetKeyName"; foreign "SDL_GetKeyName" (keycode @-> returning string)
+  pre "SDL_GetKeyName"; foreign "SDL_GetKeyName" (keycode @-> returning string)
 
 let get_mod_state =
-  print_endline "SDL_GetModState"; foreign "SDL_GetModState" (void @-> returning keymod)
+  pre "SDL_GetModState"; foreign "SDL_GetModState" (void @-> returning keymod)
 
 let get_scancode_from_key =
-  print_endline "SDL_GetScancodeFromKey"; foreign "SDL_GetScancodeFromKey" (keycode @-> returning scancode)
+  pre "SDL_GetScancodeFromKey"; foreign "SDL_GetScancodeFromKey" (keycode @-> returning scancode)
 
 let get_scancode_from_name =
-  print_endline "SDL_GetScancodeFromName"; foreign "SDL_GetScancodeFromName" (string @-> returning scancode)
+  pre "SDL_GetScancodeFromName"; foreign "SDL_GetScancodeFromName" (string @-> returning scancode)
 
 let get_scancode_name =
-  print_endline "SDL_GetScancodeName"; foreign "SDL_GetScancodeName" (scancode @-> returning string)
+  pre "SDL_GetScancodeName"; foreign "SDL_GetScancodeName" (scancode @-> returning string)
 
 let has_screen_keyboard_support =
-  print_endline "SDL_HasScreenKeyboardSupport"; foreign "SDL_HasScreenKeyboardSupport" (void @-> returning bool)
+  pre "SDL_HasScreenKeyboardSupport"; foreign "SDL_HasScreenKeyboardSupport" (void @-> returning bool)
 
 let is_screen_keyboard_shown =
-  print_endline "SDL_IsScreenKeyboardShown"; foreign "SDL_IsScreenKeyboardShown" (window @-> returning bool)
+  pre "SDL_IsScreenKeyboardShown"; foreign "SDL_IsScreenKeyboardShown" (window @-> returning bool)
 
 let is_text_input_active =
-  print_endline "SDL_IsTextInputActive"; foreign "SDL_IsTextInputActive" (void @-> returning bool)
+  pre "SDL_IsTextInputActive"; foreign "SDL_IsTextInputActive" (void @-> returning bool)
 
 let set_mod_state =
-  print_endline "SDL_SetModState"; foreign "SDL_SetModState" (keymod @-> returning void)
+  pre "SDL_SetModState"; foreign "SDL_SetModState" (keymod @-> returning void)
 
 let set_text_input_rect =
-  print_endline "SDL_SetTextInputRect"; foreign "SDL_SetTextInputRect" (ptr rect @-> returning void)
+  pre "SDL_SetTextInputRect"; foreign "SDL_SetTextInputRect" (ptr rect @-> returning void)
 
 let set_text_input_rect r =
   set_text_input_rect (Rect.opt_addr r)
 
 let start_text_input =
-  print_endline "SDL_StartTextInput"; foreign "SDL_StartTextInput" (void @-> returning void)
+  pre "SDL_StartTextInput"; foreign "SDL_StartTextInput" (void @-> returning void)
 
 let stop_text_input =
-  print_endline "SDL_StopTextInput"; foreign "SDL_StopTextInput" (void @-> returning void)
+  pre "SDL_StopTextInput"; foreign "SDL_StopTextInput" (void @-> returning void)
 
 (* Mouse *)
 
@@ -3347,17 +3351,17 @@ module Button = struct
 end
 
 let capture_mouse =
-  print_endline "SDL_CaptureMouse"; foreign "SDL_CaptureMouse" (bool @-> returning zero_to_ok)
+  pre "SDL_CaptureMouse"; foreign "SDL_CaptureMouse" (bool @-> returning zero_to_ok)
 
 let create_color_cursor =
-  print_endline "SDL_CreateColorCursor"; foreign "SDL_CreateColorCursor"
+  pre "SDL_CreateColorCursor"; foreign "SDL_CreateColorCursor"
     (surface @-> int @-> int @-> returning (some_to_ok cursor_opt))
 
 let create_color_cursor s ~hot_x ~hot_y =
   create_color_cursor s hot_x hot_y
 
 let create_cursor =
-  print_endline "SDL_CreateCursor"; foreign "SDL_CreateCursor"
+  pre "SDL_CreateCursor"; foreign "SDL_CreateCursor"
     (ptr void @-> ptr void @-> int @-> int @-> int @-> int @->
      returning (some_to_ok cursor_opt))
 
@@ -3368,20 +3372,20 @@ let create_cursor d m ~w ~h ~hot_x ~hot_y =
   create_cursor d m w h hot_x hot_y
 
 let create_system_cursor =
-  print_endline "SDL_CreateSystemCursor"; foreign "SDL_CreateSystemCursor"
+  pre "SDL_CreateSystemCursor"; foreign "SDL_CreateSystemCursor"
     (int @-> returning (some_to_ok cursor_opt))
 
 let free_cursor =
-  print_endline "SDL_FreeCursor"; foreign "SDL_FreeCursor" (cursor @-> returning void)
+  pre "SDL_FreeCursor"; foreign "SDL_FreeCursor" (cursor @-> returning void)
 
 let get_cursor =
-  print_endline "SDL_GetCursor"; foreign "SDL_GetCursor" (void @-> returning cursor_opt)
+  pre "SDL_GetCursor"; foreign "SDL_GetCursor" (void @-> returning cursor_opt)
 
 let get_default_cursor =
-  print_endline "SDL_GetDefaultCursor"; foreign "SDL_GetDefaultCursor" (void @-> returning cursor_opt)
+  pre "SDL_GetDefaultCursor"; foreign "SDL_GetDefaultCursor" (void @-> returning cursor_opt)
 
 let get_global_mouse_state =
-  print_endline "SDL_GetGlobalMouseState"; foreign "SDL_GetGlobalMouseState"
+  pre "SDL_GetGlobalMouseState"; foreign "SDL_GetGlobalMouseState"
     (ptr int @-> ptr int @-> returning int32_as_uint32_t)
 
 let get_global_mouse_state () =
@@ -3391,10 +3395,10 @@ let get_global_mouse_state () =
   s, (!@ x, !@ y)
 
 let get_mouse_focus =
-  print_endline "SDL_GetMouseFocus"; foreign "SDL_GetMouseFocus" (void @-> returning window_opt)
+  pre "SDL_GetMouseFocus"; foreign "SDL_GetMouseFocus" (void @-> returning window_opt)
 
 let get_mouse_state =
-  print_endline "SDL_GetMouseState"; foreign "SDL_GetMouseState"
+  pre "SDL_GetMouseState"; foreign "SDL_GetMouseState"
     (ptr int @-> ptr int @-> returning int32_as_uint32_t)
 
 let get_mouse_state () =
@@ -3404,10 +3408,10 @@ let get_mouse_state () =
   s, (!@ x, !@ y)
 
 let get_relative_mouse_mode =
-  print_endline "SDL_GetRelativeMouseMode"; foreign "SDL_GetRelativeMouseMode" (void @-> returning bool)
+  pre "SDL_GetRelativeMouseMode"; foreign "SDL_GetRelativeMouseMode" (void @-> returning bool)
 
 let get_relative_mouse_state =
-  print_endline "SDL_GetRelativeMouseState"; foreign "SDL_GetRelativeMouseState"
+  pre "SDL_GetRelativeMouseState"; foreign "SDL_GetRelativeMouseState"
     (ptr int @-> ptr int @-> returning int32_as_uint32_t)
 
 let get_relative_mouse_state () =
@@ -3417,29 +3421,29 @@ let get_relative_mouse_state () =
   s, (!@ x, !@ y)
 
 let show_cursor =
-  print_endline "SDL_ShowCursor"; foreign "SDL_ShowCursor" (int @-> returning bool_to_ok)
+  pre "SDL_ShowCursor"; foreign "SDL_ShowCursor" (int @-> returning bool_to_ok)
 
 let get_cursor_shown () =
   show_cursor (-1)
 
 let set_cursor =
-  print_endline "SDL_SetCursor"; foreign "SDL_SetCursor" (cursor_opt @-> returning void)
+  pre "SDL_SetCursor"; foreign "SDL_SetCursor" (cursor_opt @-> returning void)
 
 let set_relative_mouse_mode =
-  print_endline "SDL_SetRelativeMouseMode"; foreign "SDL_SetRelativeMouseMode" (bool @-> returning zero_to_ok)
+  pre "SDL_SetRelativeMouseMode"; foreign "SDL_SetRelativeMouseMode" (bool @-> returning zero_to_ok)
 
 let show_cursor b =
   show_cursor (if b then 1 else 0)
 
 let warp_mouse_in_window =
-  print_endline "SDL_WarpMouseInWindow"; foreign "SDL_WarpMouseInWindow"
+  pre "SDL_WarpMouseInWindow"; foreign "SDL_WarpMouseInWindow"
     (window_opt @-> int @-> int @-> returning void)
 
 let warp_mouse_in_window w ~x ~y =
   warp_mouse_in_window w x y
 
 let warp_mouse_global=
-  print_endline "SDL_WarpMouseGlobal"; foreign "SDL_WarpMouseGlobal" (int @-> int @-> returning zero_to_ok)
+  pre "SDL_WarpMouseGlobal"; foreign "SDL_WarpMouseGlobal" (int @-> int @-> returning zero_to_ok)
 
 let warp_mouse_global ~x ~y =
   warp_mouse_global x y
@@ -3473,20 +3477,20 @@ module Finger = struct
 end
 
 let get_num_touch_devices =
-  print_endline "SDL_GetNumTouchDevices"; foreign "SDL_GetNumTouchDevices" (void @-> returning int)
+  pre "SDL_GetNumTouchDevices"; foreign "SDL_GetNumTouchDevices" (void @-> returning int)
 
 let get_num_touch_fingers =
-  print_endline "SDL_GetNumTouchFingers"; foreign "SDL_GetNumTouchFingers" (touch_id @-> returning int)
+  pre "SDL_GetNumTouchFingers"; foreign "SDL_GetNumTouchFingers" (touch_id @-> returning int)
 
 let get_touch_device =
-  print_endline "SDL_GetTouchDevice"; foreign "SDL_GetTouchDevice" (int @-> returning touch_id)
+  pre "SDL_GetTouchDevice"; foreign "SDL_GetTouchDevice" (int @-> returning touch_id)
 
 let get_touch_device i =
   match get_touch_device i with
   | 0L -> error () | id -> Ok id
 
 let get_touch_finger =
-  print_endline "SDL_GetTouchFinger"; foreign "SDL_GetTouchFinger"
+  pre "SDL_GetTouchFinger"; foreign "SDL_GetTouchFinger"
     (touch_id @-> int @-> returning (ptr_opt finger))
 
 let get_touch_finger id i =
@@ -3494,18 +3498,18 @@ let get_touch_finger id i =
   | None -> None | Some p -> Some (!@ p)
 
 let load_dollar_templates =
-  print_endline "SDL_LoadDollarTemplates"; foreign "SDL_LoadDollarTemplates"
+  pre "SDL_LoadDollarTemplates"; foreign "SDL_LoadDollarTemplates"
     (touch_id @-> rw_ops @-> returning zero_to_ok)
 
 let record_gesture =
-  print_endline "SDL_RecordGesture"; foreign "SDL_RecordGesture" (touch_id @-> returning one_to_ok)
+  pre "SDL_RecordGesture"; foreign "SDL_RecordGesture" (touch_id @-> returning one_to_ok)
 
 let save_dollar_template =
-  print_endline "SDL_SaveDollarTemplate"; foreign "SDL_SaveDollarTemplate"
+  pre "SDL_SaveDollarTemplate"; foreign "SDL_SaveDollarTemplate"
     (gesture_id @-> rw_ops @-> returning zero_to_ok)
 
 let save_all_dollar_templates =
-  print_endline "SDL_SaveAllDollarTemplates"; foreign "SDL_SaveAllDollarTemplates" (rw_ops @-> returning zero_to_ok)
+  pre "SDL_SaveAllDollarTemplates"; foreign "SDL_SaveAllDollarTemplates" (rw_ops @-> returning zero_to_ok)
 
 (* Joystick *)
 
@@ -3583,17 +3587,17 @@ module Joystick_type = struct
 end
 
 let joystick_close =
-  print_endline "SDL_JoystickClose"; foreign "SDL_JoystickClose" (joystick @-> returning void)
+  pre "SDL_JoystickClose"; foreign "SDL_JoystickClose" (joystick @-> returning void)
 
 let joystick_current_power_level =
-  print_endline "SDL_JoystickCurrentPowerLevel"; foreign "SDL_JoystickCurrentPowerLevel"
+  pre "SDL_JoystickCurrentPowerLevel"; foreign "SDL_JoystickCurrentPowerLevel"
     (joystick @-> returning int)
 
 let joystick_event_state =
-  print_endline "SDL_JoystickEventState"; foreign "SDL_JoystickEventState" (int @-> returning nat_to_ok)
+  pre "SDL_JoystickEventState"; foreign "SDL_JoystickEventState" (int @-> returning nat_to_ok)
 
 let joystick_from_instance_id =
-  print_endline "SDL_JoystickFromInstanceID"; foreign "SDL_JoystickFromInstanceID" (joystick_id @-> returning joystick)
+  pre "SDL_JoystickFromInstanceID"; foreign "SDL_JoystickFromInstanceID" (joystick_id @-> returning joystick)
 
 let joystick_get_event_state () =
   joystick_event_state sdl_query
@@ -3602,17 +3606,17 @@ let joystick_set_event_state s =
   joystick_event_state s
 
 let joystick_get_attached =
-  print_endline "SDL_JoystickGetAttached"; foreign "SDL_JoystickGetAttached" (joystick @-> returning bool)
+  pre "SDL_JoystickGetAttached"; foreign "SDL_JoystickGetAttached" (joystick @-> returning bool)
 
 let joystick_get_axis =
-  print_endline "SDL_JoystickGetAxis"; foreign "SDL_JoystickGetAxis" (joystick @-> int @-> returning int16_t)
+  pre "SDL_JoystickGetAxis"; foreign "SDL_JoystickGetAxis" (joystick @-> int @-> returning int16_t)
 
 let joystick_get_axis_initial_state =
-  print_endline "SDL_JoystickGetAxisInitialState"; foreign "SDL_JoystickGetAxisInitialState"
+  pre "SDL_JoystickGetAxisInitialState"; foreign "SDL_JoystickGetAxisInitialState"
     (joystick @-> int @-> returning int16_t)
 
 let joystick_get_ball =
-  print_endline "SDL_JoystickGetBall"; foreign "SDL_JoystickGetBall"
+  pre "SDL_JoystickGetBall"; foreign "SDL_JoystickGetBall"
     (joystick @-> int @-> (ptr int) @-> (ptr int) @-> returning int)
 
 let joystick_get_ball j i =
@@ -3622,36 +3626,36 @@ let joystick_get_ball j i =
   | 0 -> Ok (!@ x, !@ y) | _ -> error ()
 
 let joystick_get_button =
-  print_endline "SDL_JoystickGetButton"; foreign "SDL_JoystickGetButton"
+  pre "SDL_JoystickGetButton"; foreign "SDL_JoystickGetButton"
     (joystick @-> int @-> returning int_as_uint8_t)
 
 let joystick_get_device_guid =
-  print_endline "SDL_JoystickGetDeviceGUID"; foreign "SDL_JoystickGetDeviceGUID" (int @-> returning joystick_guid)
+  pre "SDL_JoystickGetDeviceGUID"; foreign "SDL_JoystickGetDeviceGUID" (int @-> returning joystick_guid)
 
 let joystick_get_device_product =
-  print_endline "SDL_JoystickGetDeviceProduct"; foreign "SDL_JoystickGetDeviceProduct" (int @-> returning int_as_uint16_t)
+  pre "SDL_JoystickGetDeviceProduct"; foreign "SDL_JoystickGetDeviceProduct" (int @-> returning int_as_uint16_t)
 
 let joystick_get_device_product_version =
-  print_endline "SDL_JoystickGetDeviceProductVersion"; foreign "SDL_JoystickGetDeviceProductVersion"
+  pre "SDL_JoystickGetDeviceProductVersion"; foreign "SDL_JoystickGetDeviceProductVersion"
     (int @-> returning int_as_uint16_t)
 
 let joystick_get_device_type =
-  print_endline "SDL_JoystickGetDeviceType"; foreign "SDL_JoystickGetDeviceType" (int @-> returning int)
+  pre "SDL_JoystickGetDeviceType"; foreign "SDL_JoystickGetDeviceType" (int @-> returning int)
 
 let joystick_get_device_instance_id =
-  print_endline "SDL_JoystickGetDeviceInstanceID"; foreign "SDL_JoystickGetDeviceInstanceID" (int @-> returning joystick_id)
+  pre "SDL_JoystickGetDeviceInstanceID"; foreign "SDL_JoystickGetDeviceInstanceID" (int @-> returning joystick_id)
 
 let joystick_get_device_vendor =
-  print_endline "SDL_JoystickGetDeviceVendor"; foreign "SDL_JoystickGetDeviceVendor" (int @-> returning int_as_uint16_t)
+  pre "SDL_JoystickGetDeviceVendor"; foreign "SDL_JoystickGetDeviceVendor" (int @-> returning int_as_uint16_t)
 
 let joystick_get_guid =
-  print_endline "SDL_JoystickGetGUID"; foreign "SDL_JoystickGetGUID" (joystick @-> returning joystick_guid)
+  pre "SDL_JoystickGetGUID"; foreign "SDL_JoystickGetGUID" (joystick @-> returning joystick_guid)
 
 let joystick_get_guid_from_string =
-  print_endline "SDL_JoystickGetGUIDFromString"; foreign "SDL_JoystickGetGUIDFromString" (string @-> returning joystick_guid)
+  pre "SDL_JoystickGetGUIDFromString"; foreign "SDL_JoystickGetGUIDFromString" (string @-> returning joystick_guid)
 
 let joystick_get_guid_string =
-  print_endline "SDL_JoystickGetGUIDString"; foreign "SDL_JoystickGetGUIDString"
+  pre "SDL_JoystickGetGUIDString"; foreign "SDL_JoystickGetGUIDString"
     (joystick_guid @-> ptr char @-> int @-> returning void)
 
 let joystick_get_guid_string guid =
@@ -3661,54 +3665,54 @@ let joystick_get_guid_string guid =
   coerce (ptr char) string s
 
 let joystick_get_hat =
-  print_endline "SDL_JoystickGetHat"; foreign "SDL_JoystickGetHat" (joystick @-> int @-> returning int_as_uint8_t)
+  pre "SDL_JoystickGetHat"; foreign "SDL_JoystickGetHat" (joystick @-> int @-> returning int_as_uint8_t)
 
 let joystick_get_product =
-  print_endline "SDL_JoystickGetProduct"; foreign "SDL_JoystickGetProduct" (joystick @-> returning int_as_uint16_t)
+  pre "SDL_JoystickGetProduct"; foreign "SDL_JoystickGetProduct" (joystick @-> returning int_as_uint16_t)
 
 let joystick_get_product_version =
-  print_endline "SDL_JoystickGetProductVersion"; foreign "SDL_JoystickGetProductVersion"
+  pre "SDL_JoystickGetProductVersion"; foreign "SDL_JoystickGetProductVersion"
     (joystick @-> returning int_as_uint16_t)
 
 let joystick_get_type =
-  print_endline "SDL_JoystickGetType"; foreign "SDL_JoystickGetType" (joystick @-> returning int)
+  pre "SDL_JoystickGetType"; foreign "SDL_JoystickGetType" (joystick @-> returning int)
 
 let joystick_get_vendor =
-  print_endline "SDL_JoystickGetVendor"; foreign "SDL_JoystickGetVendor" (joystick @-> returning int_as_uint16_t)
+  pre "SDL_JoystickGetVendor"; foreign "SDL_JoystickGetVendor" (joystick @-> returning int_as_uint16_t)
 
 let joystick_instance_id =
-  print_endline "SDL_JoystickInstanceID"; foreign "SDL_JoystickInstanceID" (joystick @-> returning joystick_id)
+  pre "SDL_JoystickInstanceID"; foreign "SDL_JoystickInstanceID" (joystick @-> returning joystick_id)
 
 let joystick_instance_id j =
   match joystick_instance_id j with
   | n when n < 0l -> error () | n -> Ok n
 
 let joystick_name =
-  print_endline "SDL_JoystickName"; foreign "SDL_JoystickName" (joystick @-> returning (some_to_ok string_opt))
+  pre "SDL_JoystickName"; foreign "SDL_JoystickName" (joystick @-> returning (some_to_ok string_opt))
 
 let joystick_name_for_index =
-  print_endline "SDL_JoystickNameForIndex"; foreign "SDL_JoystickNameForIndex" (int @-> returning (some_to_ok string_opt))
+  pre "SDL_JoystickNameForIndex"; foreign "SDL_JoystickNameForIndex" (int @-> returning (some_to_ok string_opt))
 
 let joystick_num_axes =
-  print_endline "SDL_JoystickNumAxes"; foreign "SDL_JoystickNumAxes" (joystick @-> returning nat_to_ok)
+  pre "SDL_JoystickNumAxes"; foreign "SDL_JoystickNumAxes" (joystick @-> returning nat_to_ok)
 
 let joystick_num_balls =
-  print_endline "SDL_JoystickNumBalls"; foreign "SDL_JoystickNumBalls" (joystick @-> returning nat_to_ok)
+  pre "SDL_JoystickNumBalls"; foreign "SDL_JoystickNumBalls" (joystick @-> returning nat_to_ok)
 
 let joystick_num_buttons =
-  print_endline "SDL_JoystickNumButtons"; foreign "SDL_JoystickNumButtons" (joystick @-> returning nat_to_ok)
+  pre "SDL_JoystickNumButtons"; foreign "SDL_JoystickNumButtons" (joystick @-> returning nat_to_ok)
 
 let joystick_num_hats =
-  print_endline "SDL_JoystickNumHats"; foreign "SDL_JoystickNumHats" (joystick @-> returning nat_to_ok)
+  pre "SDL_JoystickNumHats"; foreign "SDL_JoystickNumHats" (joystick @-> returning nat_to_ok)
 
 let joystick_open =
-  print_endline "SDL_JoystickOpen"; foreign "SDL_JoystickOpen" (int @-> returning (some_to_ok joystick_opt))
+  pre "SDL_JoystickOpen"; foreign "SDL_JoystickOpen" (int @-> returning (some_to_ok joystick_opt))
 
 let joystick_update =
-  print_endline "SDL_JoystickUpdate"; foreign "SDL_JoystickUpdate" (void @-> returning void)
+  pre "SDL_JoystickUpdate"; foreign "SDL_JoystickUpdate" (void @-> returning void)
 
 let num_joysticks =
-  print_endline "SDL_NumJoysticks"; foreign "SDL_NumJoysticks" (void @-> returning nat_to_ok)
+  pre "SDL_NumJoysticks"; foreign "SDL_NumJoysticks" (void @-> returning nat_to_ok)
 
 (* Game controller *)
 
@@ -3773,20 +3777,20 @@ module Controller = struct
 end
 
 let game_controller_add_mapping =
-  print_endline "SDL_GameControllerAddMapping"; foreign "SDL_GameControllerAddMapping" (string @-> returning bool_to_ok)
+  pre "SDL_GameControllerAddMapping"; foreign "SDL_GameControllerAddMapping" (string @-> returning bool_to_ok)
 
 let game_controller_add_mapping_from_rw =
-  print_endline "SDL_GameControllerAddMappingsFromRW"; foreign "SDL_GameControllerAddMappingsFromRW"
+  pre "SDL_GameControllerAddMappingsFromRW"; foreign "SDL_GameControllerAddMappingsFromRW"
     ~stub (rw_ops @-> bool @-> returning nat_to_ok)
 
 let game_controller_close =
-  print_endline "SDL_GameControllerClose"; foreign "SDL_GameControllerClose" (game_controller @-> returning void)
+  pre "SDL_GameControllerClose"; foreign "SDL_GameControllerClose" (game_controller @-> returning void)
 
 let game_controller_event_state =
-  print_endline "SDL_GameControllerEventState"; foreign "SDL_GameControllerEventState" (int @-> returning nat_to_ok)
+  pre "SDL_GameControllerEventState"; foreign "SDL_GameControllerEventState" (int @-> returning nat_to_ok)
 
 let game_controller_from_instance_id =
-  print_endline "SDL_GameControllerFromInstanceID"; foreign "SDL_GameControllerFromInstanceID"
+  pre "SDL_GameControllerFromInstanceID"; foreign "SDL_GameControllerFromInstanceID"
     (joystick_id @-> returning game_controller)
 
 let game_controller_get_event_state () =
@@ -3796,85 +3800,85 @@ let game_controller_set_event_state t =
   game_controller_event_state t
 
 let game_controller_get_attached =
-  print_endline "SDL_GameControllerGetAttached"; foreign "SDL_GameControllerGetAttached" (game_controller @-> returning bool)
+  pre "SDL_GameControllerGetAttached"; foreign "SDL_GameControllerGetAttached" (game_controller @-> returning bool)
 
 let game_controller_get_axis =
-  print_endline "SDL_GameControllerGetAxis"; foreign "SDL_GameControllerGetAxis"
+  pre "SDL_GameControllerGetAxis"; foreign "SDL_GameControllerGetAxis"
     (game_controller @-> int @-> returning int16_t)
 
 let game_controller_get_axis_from_string =
-  print_endline "SDL_GameControllerGetAxisFromString"; foreign "SDL_GameControllerGetAxisFromString"
+  pre "SDL_GameControllerGetAxisFromString"; foreign "SDL_GameControllerGetAxisFromString"
     (string @-> returning int)
 
 let game_controller_get_bind_for_axis =
-  print_endline "SDL_GameControllerGetBindForAxis"; foreign "SDL_GameControllerGetBindForAxis"
+  pre "SDL_GameControllerGetBindForAxis"; foreign "SDL_GameControllerGetBindForAxis"
     (game_controller @-> int @-> returning button_bind)
 
 let game_controller_get_bind_for_button =
-  print_endline "SDL_GameControllerGetBindForButton"; foreign "SDL_GameControllerGetBindForButton"
+  pre "SDL_GameControllerGetBindForButton"; foreign "SDL_GameControllerGetBindForButton"
     (game_controller @-> int @-> returning button_bind)
 
 let game_controller_get_button =
-  print_endline "SDL_GameControllerGetButton"; foreign "SDL_GameControllerGetButton"
+  pre "SDL_GameControllerGetButton"; foreign "SDL_GameControllerGetButton"
     (game_controller @-> int @-> returning int_as_uint8_t)
 
 let game_controller_get_button_from_string =
-  print_endline "SDL_GameControllerGetButtonFromString"; foreign "SDL_GameControllerGetButtonFromString" (string @-> returning int)
+  pre "SDL_GameControllerGetButtonFromString"; foreign "SDL_GameControllerGetButtonFromString" (string @-> returning int)
 
 let game_controller_get_joystick =
-  print_endline "SDL_GameControllerGetJoystick"; foreign "SDL_GameControllerGetJoystick"
+  pre "SDL_GameControllerGetJoystick"; foreign "SDL_GameControllerGetJoystick"
     (game_controller @-> returning (some_to_ok joystick_opt))
 
 let game_controller_get_product =
-  print_endline "SDL_GameControllerGetProduct"; foreign "SDL_GameControllerGetProduct"
+  pre "SDL_GameControllerGetProduct"; foreign "SDL_GameControllerGetProduct"
     (game_controller @-> returning int_as_uint16_t)
 
 let game_controller_get_product_version =
-  print_endline "SDL_GameControllerGetProductVersion"; foreign "SDL_GameControllerGetProductVersion"
+  pre "SDL_GameControllerGetProductVersion"; foreign "SDL_GameControllerGetProductVersion"
     (game_controller @-> returning int_as_uint16_t)
 
 let game_controller_get_string_for_axis =
-  print_endline "SDL_GameControllerGetStringForAxis"; foreign "SDL_GameControllerGetStringForAxis" (int @-> returning string_opt)
+  pre "SDL_GameControllerGetStringForAxis"; foreign "SDL_GameControllerGetStringForAxis" (int @-> returning string_opt)
 
 let game_controller_get_string_for_button =
-  print_endline "SDL_GameControllerGetStringForButton"; foreign "SDL_GameControllerGetStringForButton" (int @-> returning string_opt)
+  pre "SDL_GameControllerGetStringForButton"; foreign "SDL_GameControllerGetStringForButton" (int @-> returning string_opt)
 
 let game_controller_get_vendor =
-  print_endline "SDL_GameControllerGetVendor"; foreign "SDL_GameControllerGetVendor"
+  pre "SDL_GameControllerGetVendor"; foreign "SDL_GameControllerGetVendor"
     (game_controller @-> returning int_as_uint16_t)
 
 let game_controller_mapping =
-  print_endline "SDL_GameControllerMapping"; foreign "SDL_GameControllerMapping"
+  pre "SDL_GameControllerMapping"; foreign "SDL_GameControllerMapping"
     (game_controller @-> returning (some_to_ok string_opt))
 
 let game_controller_mapping_for_index =
-  print_endline "SDL_GameControllerMappingForIndex"; foreign "SDL_GameControllerMappingForIndex"
+  pre "SDL_GameControllerMappingForIndex"; foreign "SDL_GameControllerMappingForIndex"
     (int @-> returning (some_to_ok string_opt))
 
 let game_controller_mapping_for_guid =
-  print_endline "SDL_GameControllerMappingForGUID"; foreign "SDL_GameControllerMappingForGUID"
+  pre "SDL_GameControllerMappingForGUID"; foreign "SDL_GameControllerMappingForGUID"
     (joystick_guid @-> returning (some_to_ok string_opt))
 
 let game_controller_name =
-  print_endline "SDL_GameControllerName"; foreign "SDL_GameControllerName"
+  pre "SDL_GameControllerName"; foreign "SDL_GameControllerName"
     (game_controller @-> returning (some_to_ok string_opt))
 
 let game_controller_name_for_index =
-  print_endline "SDL_GameControllerNameForIndex"; foreign "SDL_GameControllerNameForIndex"
+  pre "SDL_GameControllerNameForIndex"; foreign "SDL_GameControllerNameForIndex"
     (int @-> returning (some_to_ok string_opt))
 
 let game_controller_num_mappings =
-  print_endline "SDL_GameControllerNumMappings"; foreign "SDL_GameControllerNumMappings" (void @-> returning int)
+  pre "SDL_GameControllerNumMappings"; foreign "SDL_GameControllerNumMappings" (void @-> returning int)
 
 let game_controller_open =
-  print_endline "SDL_GameControllerOpen"; foreign "SDL_GameControllerOpen"
+  pre "SDL_GameControllerOpen"; foreign "SDL_GameControllerOpen"
     (int @-> returning (some_to_ok game_controller_opt))
 
 let game_controller_update =
-  print_endline "SDL_GameControllerUpdate"; foreign "SDL_GameControllerUpdate" (void @-> returning void)
+  pre "SDL_GameControllerUpdate"; foreign "SDL_GameControllerUpdate" (void @-> returning void)
 
 let is_game_controller =
-  print_endline "SDL_IsGameController"; foreign "SDL_IsGameController" (int @-> returning bool)
+  pre "SDL_IsGameController"; foreign "SDL_IsGameController" (int @-> returning bool)
 
 (* Events *)
 
@@ -4690,7 +4694,7 @@ end
 type event = Event.t union
 
 let event_state =
-  print_endline "SDL_EventState"; foreign "SDL_EventState" (event_type @-> int @-> returning int_as_uint8_t)
+  pre "SDL_EventState"; foreign "SDL_EventState" (event_type @-> int @-> returning int_as_uint8_t)
 
 let get_event_state e =
   event_state e sdl_query
@@ -4699,46 +4703,46 @@ let set_event_state e s =
   ignore (event_state e s)
 
 let flush_event =
-  print_endline "SDL_FlushEvent"; foreign "SDL_FlushEvent" (event_type @-> returning void)
+  pre "SDL_FlushEvent"; foreign "SDL_FlushEvent" (event_type @-> returning void)
 
 let flush_events =
-  print_endline "SDL_FlushEvents"; foreign "SDL_FlushEvents" (event_type @-> event_type @-> returning void)
+  pre "SDL_FlushEvents"; foreign "SDL_FlushEvents" (event_type @-> event_type @-> returning void)
 
 let has_event =
-  print_endline "SDL_HasEvent"; foreign "SDL_HasEvent" (event_type @-> returning bool)
+  pre "SDL_HasEvent"; foreign "SDL_HasEvent" (event_type @-> returning bool)
 
 let has_events =
-  print_endline "SDL_HasEvents"; foreign "SDL_HasEvents" (event_type @-> event_type @-> returning bool)
+  pre "SDL_HasEvents"; foreign "SDL_HasEvents" (event_type @-> event_type @-> returning bool)
 
 let poll_event =
-  print_endline "SDL_PollEvent"; foreign "SDL_PollEvent" (ptr Event.t @-> returning bool)
+  pre "SDL_PollEvent"; foreign "SDL_PollEvent" (ptr Event.t @-> returning bool)
 
 let poll_event e =
   poll_event (Event.opt_addr e)
 
 let pump_events =
-  print_endline "SDL_PumpEvents"; foreign "SDL_PumpEvents" (void @-> returning void)
+  pre "SDL_PumpEvents"; foreign "SDL_PumpEvents" (void @-> returning void)
 
 let push_event =
-  print_endline "SDL_PushEvent"; foreign "SDL_PushEvent" (ptr Event.t @-> returning bool_to_ok)
+  pre "SDL_PushEvent"; foreign "SDL_PushEvent" (ptr Event.t @-> returning bool_to_ok)
 
 let push_event e =
   push_event (addr e)
 
 let register_events =
-  print_endline "SDL_RegisterEvents"; foreign "SDL_RegisterEvents" (int @-> returning uint32_t)
+  pre "SDL_RegisterEvents"; foreign "SDL_RegisterEvents" (int @-> returning uint32_t)
 
 let register_event () = match Unsigned.UInt32.to_int32 (register_events 1) with
 | -1l -> None | t -> Some (Int32.to_int t)
 
 let wait_event =
-  print_endline "SDL_WaitEvent"; foreign "SDL_WaitEvent" ~release_runtime_lock:true (ptr Event.t @-> returning int)
+  pre "SDL_WaitEvent"; foreign "SDL_WaitEvent" ~release_runtime_lock:true (ptr Event.t @-> returning int)
 
 let wait_event e = match wait_event (Event.opt_addr e) with
 | 1 -> Ok () | _ -> error ()
 
 let wait_event_timeout =
-  print_endline "SDL_WaitEventTimeout"; foreign "SDL_WaitEventTimeout" ~release_runtime_lock:true
+  pre "SDL_WaitEventTimeout"; foreign "SDL_WaitEventTimeout" ~release_runtime_lock:true
     (ptr Event.t @-> int @-> returning bool)
 
 let wait_event_timeout e t =
@@ -5073,103 +5077,103 @@ type haptic_effect_id = int
 let haptic_effect_id : int typ = int
 
 let haptic_close =
-  print_endline "SDL_HapticClose"; foreign "SDL_HapticClose" (haptic @-> returning void)
+  pre "SDL_HapticClose"; foreign "SDL_HapticClose" (haptic @-> returning void)
 
 let haptic_destroy_effect =
-  print_endline "SDL_HapticDestroyEffect"; foreign "SDL_HapticDestroyEffect"
+  pre "SDL_HapticDestroyEffect"; foreign "SDL_HapticDestroyEffect"
     (haptic @-> int @-> returning void)
 
 let haptic_effect_supported =
-  print_endline "SDL_HapticEffectSupported"; foreign "SDL_HapticEffectSupported"
+  pre "SDL_HapticEffectSupported"; foreign "SDL_HapticEffectSupported"
     (haptic @-> ptr Haptic.Effect.t @-> returning bool_to_ok)
 
 let haptic_effect_supported h e =
   haptic_effect_supported h (addr e)
 
 let haptic_get_effect_status =
-  print_endline "SDL_HapticGetEffectStatus"; foreign "SDL_HapticGetEffectStatus"
+  pre "SDL_HapticGetEffectStatus"; foreign "SDL_HapticGetEffectStatus"
     (haptic @-> haptic_effect_id @-> returning bool_to_ok)
 
 let haptic_index =
-  print_endline "SDL_HapticIndex"; foreign "SDL_HapticIndex" (haptic @-> returning nat_to_ok)
+  pre "SDL_HapticIndex"; foreign "SDL_HapticIndex" (haptic @-> returning nat_to_ok)
 
 let haptic_name =
-  print_endline "SDL_HapticName"; foreign "SDL_HapticName" (int @-> returning (some_to_ok string_opt))
+  pre "SDL_HapticName"; foreign "SDL_HapticName" (int @-> returning (some_to_ok string_opt))
 
 let haptic_new_effect =
-  print_endline "SDL_HapticNewEffect"; foreign "SDL_HapticNewEffect"
+  pre "SDL_HapticNewEffect"; foreign "SDL_HapticNewEffect"
     (haptic @-> ptr Haptic.Effect.t @-> returning nat_to_ok)
 
 let haptic_new_effect h e =
   haptic_new_effect h (addr e)
 
 let haptic_num_axes =
-  print_endline "SDL_HapticNumAxes"; foreign "SDL_HapticNumAxes" (haptic @-> returning nat_to_ok)
+  pre "SDL_HapticNumAxes"; foreign "SDL_HapticNumAxes" (haptic @-> returning nat_to_ok)
 
 let haptic_num_effects =
-  print_endline "SDL_HapticNumEffects"; foreign "SDL_HapticNumEffects" (haptic @-> returning nat_to_ok)
+  pre "SDL_HapticNumEffects"; foreign "SDL_HapticNumEffects" (haptic @-> returning nat_to_ok)
 
 let haptic_num_effects_playing =
-  print_endline "SDL_HapticNumEffectsPlaying"; foreign "SDL_HapticNumEffectsPlaying" (haptic @-> returning nat_to_ok)
+  pre "SDL_HapticNumEffectsPlaying"; foreign "SDL_HapticNumEffectsPlaying" (haptic @-> returning nat_to_ok)
 
 let haptic_open =
-  print_endline "SDL_HapticOpen"; foreign "SDL_HapticOpen" (int @-> returning (some_to_ok haptic_opt))
+  pre "SDL_HapticOpen"; foreign "SDL_HapticOpen" (int @-> returning (some_to_ok haptic_opt))
 
 let haptic_open_from_joystick =
-  print_endline "SDL_HapticOpenFromJoystick"; foreign "SDL_HapticOpenFromJoystick"
+  pre "SDL_HapticOpenFromJoystick"; foreign "SDL_HapticOpenFromJoystick"
   (joystick @-> returning (some_to_ok haptic_opt))
 
 let haptic_open_from_mouse =
-  print_endline "SDL_HapticOpenFromMouse"; foreign "SDL_HapticOpenFromMouse"
+  pre "SDL_HapticOpenFromMouse"; foreign "SDL_HapticOpenFromMouse"
     (void @-> returning (some_to_ok haptic_opt))
 
 let haptic_opened =
-  print_endline "SDL_HapticOpened"; foreign "SDL_HapticOpened" (int @-> returning int)
+  pre "SDL_HapticOpened"; foreign "SDL_HapticOpened" (int @-> returning int)
 
 let haptic_opened i = match haptic_opened i with
 | 0 -> false | 1 -> true | _ -> assert false
 
 let haptic_pause =
-  print_endline "SDL_HapticPause"; foreign "SDL_HapticPause" (haptic @-> returning zero_to_ok)
+  pre "SDL_HapticPause"; foreign "SDL_HapticPause" (haptic @-> returning zero_to_ok)
 
 let haptic_query =
-  print_endline "SDL_HapticQuery"; foreign "SDL_HapticQuery" (haptic @-> returning int)
+  pre "SDL_HapticQuery"; foreign "SDL_HapticQuery" (haptic @-> returning int)
 
 let haptic_rumble_init =
-  print_endline "SDL_HapticRumbleInit"; foreign "SDL_HapticRumbleInit" (haptic @-> returning zero_to_ok)
+  pre "SDL_HapticRumbleInit"; foreign "SDL_HapticRumbleInit" (haptic @-> returning zero_to_ok)
 
 let haptic_rumble_play =
-  print_endline "SDL_HapticRumblePlay"; foreign "SDL_HapticRumblePlay"
+  pre "SDL_HapticRumblePlay"; foreign "SDL_HapticRumblePlay"
     (haptic @-> float @-> int32_t @-> returning zero_to_ok)
 
 let haptic_rumble_stop =
-  print_endline "SDL_HapticRumbleStop"; foreign "SDL_HapticRumbleStop" (haptic @-> returning zero_to_ok)
+  pre "SDL_HapticRumbleStop"; foreign "SDL_HapticRumbleStop" (haptic @-> returning zero_to_ok)
 
 let haptic_rumble_supported =
-  print_endline "SDL_HapticRumbleSupported"; foreign "SDL_HapticRumbleSupported" (haptic @-> returning bool_to_ok)
+  pre "SDL_HapticRumbleSupported"; foreign "SDL_HapticRumbleSupported" (haptic @-> returning bool_to_ok)
 
 let haptic_run_effect =
-  print_endline "SDL_HapticRunEffect"; foreign "SDL_HapticRunEffect"
+  pre "SDL_HapticRunEffect"; foreign "SDL_HapticRunEffect"
     (haptic @-> haptic_effect_id  @-> int32_t @-> returning zero_to_ok)
 
 let haptic_set_autocenter =
-  print_endline "SDL_HapticSetAutocenter"; foreign "SDL_HapticSetAutocenter" (haptic @-> int @-> returning zero_to_ok)
+  pre "SDL_HapticSetAutocenter"; foreign "SDL_HapticSetAutocenter" (haptic @-> int @-> returning zero_to_ok)
 
 let haptic_set_gain =
-  print_endline "SDL_HapticSetGain"; foreign "SDL_HapticSetGain" (haptic @-> int @-> returning zero_to_ok)
+  pre "SDL_HapticSetGain"; foreign "SDL_HapticSetGain" (haptic @-> int @-> returning zero_to_ok)
 
 let haptic_stop_all =
-  print_endline "SDL_HapticStopAll"; foreign "SDL_HapticStopAll" (haptic @-> returning zero_to_ok)
+  pre "SDL_HapticStopAll"; foreign "SDL_HapticStopAll" (haptic @-> returning zero_to_ok)
 
 let haptic_stop_effect =
-  print_endline "SDL_HapticStopEffect"; foreign "SDL_HapticStopEffect"
+  pre "SDL_HapticStopEffect"; foreign "SDL_HapticStopEffect"
     (haptic @-> haptic_effect_id @-> returning zero_to_ok)
 
 let haptic_unpause =
-  print_endline "SDL_HapticUnpause"; foreign "SDL_HapticUnpause" (haptic @-> returning zero_to_ok)
+  pre "SDL_HapticUnpause"; foreign "SDL_HapticUnpause" (haptic @-> returning zero_to_ok)
 
 let haptic_update_effect =
-  print_endline "SDL_HapticUpdateEffect"; foreign "SDL_HapticUpdateEffect"
+  pre "SDL_HapticUpdateEffect"; foreign "SDL_HapticUpdateEffect"
     (haptic @-> haptic_effect_id @-> ptr Haptic.Effect.t @->
      returning zero_to_ok)
 
@@ -5177,34 +5181,34 @@ let haptic_update_effect h id e =
   haptic_update_effect h id (addr e)
 
 let joystick_is_haptic =
-  print_endline "SDL_JoystickIsHaptic"; foreign "SDL_JoystickIsHaptic"
+  pre "SDL_JoystickIsHaptic"; foreign "SDL_JoystickIsHaptic"
     (joystick @-> returning bool_to_ok)
 
 let mouse_is_haptic =
-  print_endline "SDL_MouseIsHaptic"; foreign "SDL_MouseIsHaptic" (void @-> returning bool_to_ok)
+  pre "SDL_MouseIsHaptic"; foreign "SDL_MouseIsHaptic" (void @-> returning bool_to_ok)
 
 let num_haptics =
-  print_endline "SDL_NumHaptics"; foreign "SDL_NumHaptics" (void @-> returning nat_to_ok)
+  pre "SDL_NumHaptics"; foreign "SDL_NumHaptics" (void @-> returning nat_to_ok)
 
 (* Audio *)
 
 (* Audio drivers *)
 
 let audio_init =
-  print_endline "SDL_AudioInit"; foreign "SDL_AudioInit" (string_opt @-> returning zero_to_ok)
+  pre "SDL_AudioInit"; foreign "SDL_AudioInit" (string_opt @-> returning zero_to_ok)
 
 let audio_quit =
-  print_endline "SDL_AudioQuit"; foreign "SDL_AudioQuit" (void @-> returning void)
+  pre "SDL_AudioQuit"; foreign "SDL_AudioQuit" (void @-> returning void)
 
 let get_audio_driver =
-  print_endline "SDL_GetAudioDriver"; foreign "SDL_GetAudioDriver"
+  pre "SDL_GetAudioDriver"; foreign "SDL_GetAudioDriver"
     (int @-> returning (some_to_ok string_opt))
 
 let get_current_audio_driver =
-  print_endline "SDL_GetCurrentAudioDriver"; foreign "SDL_GetCurrentAudioDriver" (void @-> returning string_opt)
+  pre "SDL_GetCurrentAudioDriver"; foreign "SDL_GetCurrentAudioDriver" (void @-> returning string_opt)
 
 let get_num_audio_drivers =
-  print_endline "SDL_GetNumAudioDrivers"; foreign "SDL_GetNumAudioDrivers" (void @-> returning nat_to_ok)
+  pre "SDL_GetNumAudioDrivers"; foreign "SDL_GetNumAudioDrivers" (void @-> returning nat_to_ok)
 
 (* Audio devices *)
 
@@ -5309,26 +5313,26 @@ let audio_spec_to_c a =
   c
 
 let close_audio_device =
-  print_endline "SDL_CloseAudioDevice"; foreign "SDL_CloseAudioDevice" (audio_device_id @-> returning void)
+  pre "SDL_CloseAudioDevice"; foreign "SDL_CloseAudioDevice" (audio_device_id @-> returning void)
 
 let free_wav =
-  print_endline "SDL_FreeWAV"; foreign "SDL_FreeWAV" (ptr void @-> returning void)
+  pre "SDL_FreeWAV"; foreign "SDL_FreeWAV" (ptr void @-> returning void)
 
 let free_wav ba =
   free_wav (to_voidp (bigarray_start array1 ba))
 
 let get_audio_device_name =
-  print_endline "SDL_GetAudioDeviceName"; foreign "SDL_GetAudioDeviceName"
+  pre "SDL_GetAudioDeviceName"; foreign "SDL_GetAudioDeviceName"
     (int @-> bool @-> returning (some_to_ok string_opt))
 
 let get_audio_device_status =
-  print_endline "SDL_GetAudioDeviceStatus"; foreign "SDL_GetAudioDeviceStatus" (audio_device_id @-> returning int)
+  pre "SDL_GetAudioDeviceStatus"; foreign "SDL_GetAudioDeviceStatus" (audio_device_id @-> returning int)
 
 let get_num_audio_devices =
-  print_endline "SDL_GetNumAudioDevices"; foreign "SDL_GetNumAudioDevices" (bool @-> returning nat_to_ok)
+  pre "SDL_GetNumAudioDevices"; foreign "SDL_GetNumAudioDevices" (bool @-> returning nat_to_ok)
 
 let load_wav_rw =
-  print_endline "SDL_LoadWAV_RW"; foreign "SDL_LoadWAV_RW" ~release_runtime_lock:true
+  pre "SDL_LoadWAV_RW"; foreign "SDL_LoadWAV_RW" ~release_runtime_lock:true
     (rw_ops @-> int @-> ptr audio_spec @-> ptr (ptr void) @-> ptr uint32_t @->
      returning (some_to_ok (ptr_opt audio_spec)))
 
@@ -5350,10 +5354,10 @@ let load_wav_rw ops spec kind =
       Ok (rspec, bigarray_of_ptr array1 ba_size kind d)
 
 let lock_audio_device =
-  print_endline "SDL_LockAudioDevice"; foreign "SDL_LockAudioDevice" (audio_device_id @-> returning void)
+  pre "SDL_LockAudioDevice"; foreign "SDL_LockAudioDevice" (audio_device_id @-> returning void)
 
 let open_audio_device =
-  print_endline "SDL_OpenAudioDevice"; foreign "SDL_OpenAudioDevice"
+  pre "SDL_OpenAudioDevice"; foreign "SDL_OpenAudioDevice"
     (string_opt @-> bool @-> ptr audio_spec @-> ptr audio_spec @->
      Audio.allow @-> returning int32_as_uint32_t)
 
@@ -5366,13 +5370,13 @@ let open_audio_device dev capture desired allow =
   | id -> Ok (id,  audio_spec_of_c obtained)
 
 let pause_audio_device =
-  print_endline "SDL_PauseAudioDevice"; foreign "SDL_PauseAudioDevice" (audio_device_id @-> bool @-> returning void)
+  pre "SDL_PauseAudioDevice"; foreign "SDL_PauseAudioDevice" (audio_device_id @-> bool @-> returning void)
 
 let unlock_audio_device =
-  print_endline "SDL_UnlockAudioDevice"; foreign "SDL_UnlockAudioDevice" (audio_device_id @-> returning void)
+  pre "SDL_UnlockAudioDevice"; foreign "SDL_UnlockAudioDevice" (audio_device_id @-> returning void)
 
 let queue_audio =
-  print_endline "SDL_QueueAudio"; foreign "SDL_QueueAudio"
+  pre "SDL_QueueAudio"; foreign "SDL_QueueAudio"
     (audio_device_id @-> ptr void @-> int_as_uint32_t @-> returning zero_to_ok)
 
 let queue_audio dev ba =
@@ -5381,7 +5385,7 @@ let queue_audio dev ba =
   queue_audio dev (to_voidp (bigarray_start array1 ba)) (len * kind_size)
 
 let dequeue_audio =
-  print_endline "SDL_DequeueAudio"; foreign "SDL_DequeueAudio"
+  pre "SDL_DequeueAudio"; foreign "SDL_DequeueAudio"
     (audio_device_id @-> ptr void @-> int @-> returning int_as_uint32_t)
 
 let dequeue_audio dev ba =
@@ -5390,78 +5394,78 @@ let dequeue_audio dev ba =
   dequeue_audio dev (to_voidp (bigarray_start array1 ba)) (len * kind_size)
 
 let get_queued_audio_size =
-  print_endline "SDL_GetQueuedAudioSize"; foreign "SDL_GetQueuedAudioSize"
+  pre "SDL_GetQueuedAudioSize"; foreign "SDL_GetQueuedAudioSize"
     (audio_device_id @-> returning int_as_uint32_t)
 
 let clear_queued_audio =
-  print_endline "SDL_ClearQueuedAudio"; foreign "SDL_ClearQueuedAudio" (audio_device_id @-> returning void)
+  pre "SDL_ClearQueuedAudio"; foreign "SDL_ClearQueuedAudio" (audio_device_id @-> returning void)
 
 (* Timer *)
 
 let delay =
-  print_endline "SDL_Delay"; foreign "SDL_Delay" ~release_runtime_lock:true (int32_t @-> returning void)
+  pre "SDL_Delay"; foreign "SDL_Delay" ~release_runtime_lock:true (int32_t @-> returning void)
 
 let get_ticks =
-  print_endline "SDL_GetTicks"; foreign "SDL_GetTicks" (void @-> returning int32_t)
+  pre "SDL_GetTicks"; foreign "SDL_GetTicks" (void @-> returning int32_t)
 
 let get_ticks64 =
-  print_endline "SDL_GetTicks64"; foreign "SDL_GetTicks64" (void @-> returning int64_t)
+  pre "SDL_GetTicks64"; foreign "SDL_GetTicks64" (void @-> returning int64_t)
 
 let get_performance_counter =
-  print_endline "SDL_GetPerformanceCounter"; foreign "SDL_GetPerformanceCounter" (void @-> returning int64_t)
+  pre "SDL_GetPerformanceCounter"; foreign "SDL_GetPerformanceCounter" (void @-> returning int64_t)
 
 let get_performance_frequency =
-  print_endline "SDL_GetPerformanceFrequency"; foreign "SDL_GetPerformanceFrequency" (void @-> returning int64_t)
+  pre "SDL_GetPerformanceFrequency"; foreign "SDL_GetPerformanceFrequency" (void @-> returning int64_t)
 
 (* Platform and CPU information *)
 
 let get_platform =
-  print_endline "SDL_GetPlatform"; foreign "SDL_GetPlatform" (void @-> returning string)
+  pre "SDL_GetPlatform"; foreign "SDL_GetPlatform" (void @-> returning string)
 
 let get_cpu_cache_line_size =
-  print_endline "SDL_GetCPUCacheLineSize"; foreign "SDL_GetCPUCacheLineSize" (void @-> returning nat_to_ok)
+  pre "SDL_GetCPUCacheLineSize"; foreign "SDL_GetCPUCacheLineSize" (void @-> returning nat_to_ok)
 
 let get_cpu_count =
-  print_endline "SDL_GetCPUCount"; foreign "SDL_GetCPUCount" (void @-> returning int)
+  pre "SDL_GetCPUCount"; foreign "SDL_GetCPUCount" (void @-> returning int)
 
 let get_system_ram =
-  print_endline "SDL_GetSystemRAM"; foreign "SDL_GetSystemRAM" (void @-> returning int)
+  pre "SDL_GetSystemRAM"; foreign "SDL_GetSystemRAM" (void @-> returning int)
 
 let has_3d_now =
-  print_endline "SDL_Has3DNow"; foreign "SDL_Has3DNow" (void @-> returning bool)
+  pre "SDL_Has3DNow"; foreign "SDL_Has3DNow" (void @-> returning bool)
 
 let has_altivec =
-  print_endline "SDL_HasAltiVec"; foreign "SDL_HasAltiVec" (void @-> returning bool)
+  pre "SDL_HasAltiVec"; foreign "SDL_HasAltiVec" (void @-> returning bool)
 
 let has_avx =
-  print_endline "SDL_HasAVX"; foreign "SDL_HasAVX" ~stub (void @-> returning bool)
+  pre "SDL_HasAVX"; foreign "SDL_HasAVX" ~stub (void @-> returning bool)
 
 let has_avx2 =
   foreign  "SDL_HasAVX2" (void @-> returning bool)
 
 let has_mmx =
-  print_endline "SDL_HasMMX"; foreign "SDL_HasMMX" (void @-> returning bool)
+  pre "SDL_HasMMX"; foreign "SDL_HasMMX" (void @-> returning bool)
 
 let has_neon =
-  print_endline "SDL_HasNEON"; foreign "SDL_HasNEON" (void @-> returning bool)
+  pre "SDL_HasNEON"; foreign "SDL_HasNEON" (void @-> returning bool)
 
 let has_rdtsc =
-  print_endline "SDL_HasRDTSC"; foreign "SDL_HasRDTSC" (void @-> returning bool)
+  pre "SDL_HasRDTSC"; foreign "SDL_HasRDTSC" (void @-> returning bool)
 
 let has_sse =
-  print_endline "SDL_HasSSE"; foreign "SDL_HasSSE" (void @-> returning bool)
+  pre "SDL_HasSSE"; foreign "SDL_HasSSE" (void @-> returning bool)
 
 let has_sse2 =
-  print_endline "SDL_HasSSE2"; foreign "SDL_HasSSE2" (void @-> returning bool)
+  pre "SDL_HasSSE2"; foreign "SDL_HasSSE2" (void @-> returning bool)
 
 let has_sse3 =
-  print_endline "SDL_HasSSE3"; foreign "SDL_HasSSE3" (void @-> returning bool)
+  pre "SDL_HasSSE3"; foreign "SDL_HasSSE3" (void @-> returning bool)
 
 let has_sse41 =
-  print_endline "SDL_HasSSE41"; foreign "SDL_HasSSE41" (void @-> returning bool)
+  pre "SDL_HasSSE41"; foreign "SDL_HasSSE41" (void @-> returning bool)
 
 let has_sse42 =
-  print_endline "SDL_HasSSE42"; foreign "SDL_HasSSE42" (void @-> returning bool)
+  pre "SDL_HasSSE42"; foreign "SDL_HasSSE42" (void @-> returning bool)
 
 (* Power management *)
 
@@ -5481,7 +5485,7 @@ type power_info =
     pi_pct : int option; }
 
 let get_power_info =
-  print_endline "SDL_GetPowerInfo"; foreign "SDL_GetPowerInfo" ((ptr int) @-> (ptr int) @-> returning int)
+  pre "SDL_GetPowerInfo"; foreign "SDL_GetPowerInfo" ((ptr int) @-> (ptr int) @-> returning int)
 
 let get_power_info () =
   let secs = allocate int 0 in
@@ -5500,7 +5504,7 @@ let language = field sdl_locale "language" (ptr_opt char)
 let country = field sdl_locale "country" (ptr_opt char)
 let () = seal sdl_locale
 
-let get_preferred_locales = print_endline "SDL_GetPreferredLocales"; foreign "SDL_GetPreferredLocales"
+let get_preferred_locales = pre "SDL_GetPreferredLocales"; foreign "SDL_GetPreferredLocales"
     (void @-> returning (ptr sdl_locale))
 
 type locale = { language : string; country : string option }
