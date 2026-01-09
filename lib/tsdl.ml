@@ -387,7 +387,7 @@ let _rw_ops_read = field rw_ops_struct "read"
     (funptr (rw_ops @-> ptr void @-> size_t @-> size_t @-> returning size_t))
 let _rw_ops_write = field rw_ops_struct "write"
     (funptr (rw_ops @-> ptr void @-> size_t @-> size_t @-> returning size_t))
-let _rw_ops_close = field rw_ops_struct "close"
+let rw_ops_close = field rw_ops_struct "close"
     (funptr (rw_ops @-> returning int))
 let _ = field rw_ops_struct "type" uint32_t
 (* ... #ifdef'd union follows, we don't care we don't use Ctypes.make *)
@@ -424,11 +424,26 @@ let load_file filename = (* defined as a macro in SDL_rwops.h *)
   | Error _ as e -> e
   | Ok rw -> load_file_rw rw true
 
-let rw_close =
-  print_endline "SDL_RWclose"; foreign "SDL_RWclose" (rw_ops @-> returning int)
 
-let rw_close ops =
-  if rw_close ops = 0 then Ok () else (error ())
+(* On Windows (MinGW) SDL_RWclose is not exported as a DLL symbol, it's a macro,
+   so we cannonot do this: *)
+(* let rw_close = *)
+(*   print_endline "SDL_RWclose"; foreign "SDL_RWclose" (rw_ops @-> returning int) *)
+(* let rw_close ops = *)
+(*   if rw_close ops = 0 then Ok () else (error ()) *)
+
+(* Instead we do this: *)
+let rw_close_raw (rw : rw_ops) : int =
+  let s : _rw_ops structure = !@ rw in
+  let close_fn = getf s rw_ops_close in
+  close_fn rw
+
+let rw_close (rw : rw_ops) : unit result =
+  if rw_close_raw rw = 0
+  then Ok ()
+  else error ()
+
+
 
 let unsafe_rw_ops_of_ptr addr : rw_ops =
   from_voidp rw_ops_struct (ptr_of_raw_address addr)
