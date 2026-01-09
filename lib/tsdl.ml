@@ -5422,7 +5422,10 @@ let get_ticks =
   pre "SDL_GetTicks"; foreign "SDL_GetTicks" (void @-> returning int32_t)
 
 let get_ticks64 =
-  pre "SDL_GetTicks64"; foreign "SDL_GetTicks64" (void @-> returning int64_t)
+  pre "SDL_GetTicks64";
+  if sdl2_version >= (2,0,18)
+  then foreign "SDL_GetTicks64" (void @-> returning int64_t)
+  else fun _ -> failwith "SDL_GetTicks64 not implemented (need SDL >= 2.0.18)"
 
 let get_performance_counter =
   pre "SDL_GetPerformanceCounter"; foreign "SDL_GetPerformanceCounter" (void @-> returning int64_t)
