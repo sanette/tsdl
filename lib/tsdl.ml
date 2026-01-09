@@ -5520,8 +5520,11 @@ let language = field sdl_locale "language" (ptr_opt char)
 let country = field sdl_locale "country" (ptr_opt char)
 let () = seal sdl_locale
 
-let get_preferred_locales = pre "SDL_GetPreferredLocales"; foreign "SDL_GetPreferredLocales"
-    (void @-> returning (ptr sdl_locale))
+let get_preferred_locales = pre "SDL_GetPreferredLocales";
+  if sdl2_version >= (2,0,14)
+  then foreign "SDL_GetPreferredLocales"
+      (void @-> returning (ptr sdl_locale))
+  else fun _ -> failwith "SDL_GetPreferredLocales not implemented (need SDL >= 2.0.14)"
 
 type locale = { language : string; country : string option }
 
