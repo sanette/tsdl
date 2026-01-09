@@ -366,8 +366,9 @@ let get_version () =
   get_version (addr v);
   (get v version_major), (get v version_minor), (get v version_patch)
 
-let () = let maj, mn, p = get_version () in
-  log "SDL Version (%u,%u,%u)" maj mn p
+let sdl2_version = get_version ()
+
+let () = let a,b,c = sdl2_version in log "SDL Version (%u,%u,%u)" a b c
 
 let get_revision =
   print_endline "SDL_GetRevision"; foreign "SDL_GetRevision" (void @-> returning string)
@@ -1466,8 +1467,11 @@ let render_draw_line =
     (renderer @-> int @-> int @-> int @-> int @-> returning zero_to_ok)
 
 let render_draw_line_f =
-  print_endline "SDL_RenderDrawLineF"; foreign "SDL_RenderDrawLineF"
-    (renderer @-> float @-> float @-> float @-> float @-> returning zero_to_ok)
+  print_endline "SDL_RenderDrawLineF";
+  if sdl2_version >= (2,0,10)
+  then foreign "SDL_RenderDrawLineF"
+      (renderer @-> float @-> float @-> float @-> float @-> returning zero_to_ok)
+  else fun _ -> failwith "Sdl_RenderDrawLineF not implemented (need SDL >= 2.0.10)"
 
 let render_draw_lines =
   print_endline "SDL_RenderDrawLines"; foreign "SDL_RenderDrawLines"
@@ -1504,12 +1508,18 @@ let render_draw_points r ps =
   render_draw_points r (to_voidp (CArray.start a)) (CArray.length a)
 
 let render_draw_point_f =
-  print_endline "SDL_RenderDrawPointF"; foreign "SDL_RenderDrawPointF"
+  print_endline "SDL_RenderDrawPointF";
+  if sdl2_version >= (2,0,10)
+  then foreign "SDL_RenderDrawPointF"
     (renderer @-> float @-> float @-> returning zero_to_ok)
+  else fun _ -> failwith "Sdl_RenderDrawPointF not implemented (need SDL >= 2.0.10)"
 
 let render_draw_points_f =
-  print_endline "SDL_RenderDrawPointsF"; foreign "SDL_RenderDrawPointsF"
+  print_endline "SDL_RenderDrawPointsF";
+   if sdl2_version >= (2,0,10)
+   then foreign "SDL_RenderDrawPointsF"
     (renderer @-> ptr void @-> int @-> returning zero_to_ok)
+  else fun _ -> failwith "Sdl_RenderDrawPointsF not implemented (need SDL >= 2.0.10)"
 
 let render_draw_points_f_ba r ps =
   let len = Bigarray.Array1.dim ps in
@@ -1680,7 +1690,10 @@ let render_get_viewport rend =
   r
 
 let render_get_window =
-  print_endline "SDL_RenderGetWindow"; foreign "SDL_RenderGetWindow" (renderer @-> returning (some_to_ok window_opt))
+  print_endline "SDL_RenderGetWindow";
+  if sdl2_version >= (2,0,22)
+  then foreign "SDL_RenderGetWindow" (renderer @-> returning (some_to_ok window_opt))
+  else fun _ -> failwith "SDL_RenderGetWindow not implemented (need SDL >= 2.0.22)"
 
 let render_present =
   print_endline "SDL_RenderPresent"; foreign "SDL_RenderPresent" ~release_runtime_lock:true
