@@ -1581,9 +1581,13 @@ let render_fill_rects r rs =
   render_fill_rects r (to_voidp (CArray.start a)) (CArray.length a)
 
 let render_geometry =
-  pre "SDL_RenderGeometry"; foreign "SDL_RenderGeometry"
+  pre "SDL_RenderGeometry";
+  if sdl2_version >= (2,0,18)
+  then foreign "SDL_RenderGeometry"
     (renderer @-> texture @-> ptr void @-> int @-> ptr void @-> int @->
      returning zero_to_ok)
+  else fun _ -> failwith "SDL_RenderGeometry not implemented (need SDL >= 2.0.18)"
+
 
 let render_geometry ?indices ?texture r vertices =
   let a1 = CArray.of_list vertex vertices in
@@ -1600,12 +1604,15 @@ let render_geometry ?indices ?texture r vertices =
     r t (to_voidp (CArray.start a1)) (CArray.length a1) a2_ptr a2_len
 
 let render_geometry_raw =
-  pre "SDL_RenderGeometryRaw"; foreign "SDL_RenderGeometryRaw"
+  pre "SDL_RenderGeometryRaw";
+  if sdl2_version >= (2,0,18)
+  then foreign "SDL_RenderGeometryRaw"
     (renderer @-> texture @->
      ptr void @-> int @->
      ptr void @-> int @->
      ptr void @-> int @->
      int @-> ptr void @-> int @-> int @-> returning zero_to_ok)
+  else fun _ -> failwith "SDL_RenderGeometryRaw not implemented (need SDL >= 2.0.18)"
 
 let render_geometry_raw
     ?indices ?texture r ~xy ?(xy_stride = 8) ~color ?(color_stride = 4)
