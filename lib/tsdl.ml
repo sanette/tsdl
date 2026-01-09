@@ -15,7 +15,7 @@ module Sdl = struct
 open Tsdl_consts
 
 (* Set this to true to print the foreign symbols in the CI *)
-let debug_symbols = true
+let debug_symbols = false
 let pre = if debug_symbols then print_endline else ignore
 
 (* Formatting with continuation. *)
@@ -372,7 +372,8 @@ let get_version () =
 
 let sdl2_version = get_version ()
 
-let () = let a,b,c = sdl2_version in log "SDL Version (%u,%u,%u)" a b c
+let () = if debug_symbols
+  then let a,b,c = sdl2_version in log "SDL Version (%u,%u,%u)" a b c
 
 let get_revision =
   pre "SDL_GetRevision"; foreign "SDL_GetRevision" (void @-> returning string)
