@@ -1827,8 +1827,11 @@ let get_texture_color_mod t =
   | Ok () -> Ok (get r, get g, get b) | Error _ as e -> e
 
 let get_texture_scale_mode =
-  pre "SDL_GetTextureScaleMode"; foreign "SDL_GetTextureScaleMode"
-    (texture @-> ptr uint @-> returning zero_to_ok)
+  pre "SDL_GetTextureScaleMode";
+  if sdl2_version >= (2,0,12)
+  then foreign "SDL_GetTextureScaleMode"
+      (texture @-> ptr uint @-> returning zero_to_ok)
+  else fun _ -> failwith "SDL_GetTextureScaleMode not implemented (need SDL >= 2.0.12)"
 
 let get_texture_scale_mode t =
   let m = allocate uint Unsigned.UInt.zero in
