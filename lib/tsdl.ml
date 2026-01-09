@@ -1896,8 +1896,11 @@ let set_texture_color_mod =
      returning zero_to_ok)
 
 let set_texture_scale_mode =
-  pre "SDL_SetTextureScaleMode"; foreign "SDL_SetTextureScaleMode"
+  pre "SDL_SetTextureScaleMode";
+  if sdl2_version >= (2,0,12)
+  then foreign "SDL_SetTextureScaleMode"
     (texture @-> uint @-> returning zero_to_ok)
+  else fun _ -> failwith "SDL_SetTextureScaleMode not implemented (need SDL >= 2.0.12)"
 
 let unlock_texture =
   pre "SDL_UnlockTexture"; foreign "SDL_UnlockTexture" (texture @-> returning void)
@@ -2042,11 +2045,8 @@ let get_display_mode d i =
   | Ok () -> Ok (display_mode_of_c mode) | Error _ as e -> e
 
 let get_display_usable_bounds =
-  pre "SDL_GetDisplayUsableBounds";
-  if sdl2_version >= (2,0,14)
-  then foreign "SDL_GetDisplayUsableBounds"
+  pre "SDL_GetDisplayUsableBounds"; foreign "SDL_GetDisplayUsableBounds"
       (int @-> ptr rect @-> returning zero_to_ok)
-  else fun _ -> failwith "SDL_GetDisplayUsableBounds not implemented (need SDL >= 2.0.14)"
 
 let get_display_usable_bounds i =
   let r = make rect in
@@ -5407,17 +5407,11 @@ let dequeue_audio dev ba =
   dequeue_audio dev (to_voidp (bigarray_start array1 ba)) (len * kind_size)
 
 let get_queued_audio_size =
-  pre "SDL_GetQueuedAudioSize";
-  if sdl2_version >= (2,0,12)
-  then foreign "SDL_GetQueuedAudioSize"
+  pre "SDL_GetQueuedAudioSize"; foreign "SDL_GetQueuedAudioSize"
       (audio_device_id @-> returning int_as_uint32_t)
-  else fun _ -> failwith "SDL_GetQueuedAudioSize not implemented (need SDL >= 2.0.12)"
 
 let clear_queued_audio =
-  pre "SDL_ClearQueuedAudio";
-   if sdl2_version >= (2,0,12)
-   then foreign "SDL_ClearQueuedAudio" (audio_device_id @-> returning void)
-   else fun _ -> failwith "SDL_ClearQueuedAudio not implemented (need SDL >= 2.0.12)"
+  pre "SDL_ClearQueuedAudio"; foreign "SDL_ClearQueuedAudio" (audio_device_id @-> returning void)
 
 (* Timer *)
 
@@ -5504,10 +5498,7 @@ type power_info =
     pi_pct : int option; }
 
 let get_power_info =
-  pre "SDL_GetPowerInfo";
-  if sdl2_version >= (2,0,16)
-  then foreign "SDL_GetPowerInfo" ((ptr int) @-> (ptr int) @-> returning int)
-  else fun _ -> failwith "SDL_GetPowerInfo not implemented (need SDL >= 2.0.16)"
+  pre "SDL_GetPowerInfo"; foreign "SDL_GetPowerInfo" ((ptr int) @-> (ptr int) @-> returning int)
 
 let get_power_info () =
   let secs = allocate int 0 in
