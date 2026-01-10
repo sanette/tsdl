@@ -433,9 +433,8 @@ let load_file filename = (* defined as a macro in SDL_rwops.h *)
   | Error _ as e -> e
   | Ok rw -> load_file_rw rw true
 
-
 (* On Windows (MinGW) SDL_RWclose is not exported as a DLL symbol, it's a macro,
-   so we cannonot do this: *)
+   so we cannot do this: *)
 (* let rw_close = *)
 (*   pre "SDL_RWclose"; foreign "SDL_RWclose" (rw_ops @-> returning int) *)
 (* let rw_close ops = *)
