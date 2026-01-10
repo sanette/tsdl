@@ -34,7 +34,7 @@ opam unpin git@github.com:sanette/tsdl.git
   takes care of your Main function, so that it can inject OS specific
   code (for Windows). In this case, you should link with `SDL2main`
   and use the `-mwindows` to tell Windows to use a specific GUI
-  startup.
+  startup. (This is what pkg-config suggests.)
 
   However, most SDL bindings to other languages (`tsdl` for OCaml, but
   also, apparently, bindings for Rust, Zig, Python, Lua) decided not

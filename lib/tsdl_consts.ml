@@ -66,6 +66,7 @@ let sdl_pixelformat_index1msb = 0x11200100l
 let sdl_pixelformat_index4lsb = 0x12100400l
 let sdl_pixelformat_index4msb = 0x12200400l
 let sdl_pixelformat_index8 = 0x13000801l
+let sdl_pixelformat_rgba32 = 0x16762004l
 let sdl_pixelformat_rgb332 = 0x14110801l
 let sdl_pixelformat_rgb444 = 0x15120C02l
 let sdl_pixelformat_rgb555 = 0x15130F02l

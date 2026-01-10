@@ -1,7 +1,7 @@
 (lang dune 3.20)
 
 (name tsdl)
-(version "1.2.0-1bf17f5.dune")
+(version "1.2.0-a2386d5.dune")
 (generate_opam_files true)
 
 (source
