@@ -1,4 +1,5 @@
 # Experimental dune version of TSDL
+(SDL2 bindings for OCaml)
 
 original: https://github.com/dbuenzli/tsdl
 
@@ -21,7 +22,7 @@ opam unpin https://github.com/sanette/tsdl.git
 - This version has been reported to work on Windows-Cygwin (see below)
   (and of course in Linux and Macos too).
 
-- It works with any version of SDL >= 2.0.10.  (Of course, if you have
+- It works with any version of SDL >= 2.0.7.  (Of course, if you have
   a more recent version, more functions will be available)
 
 
