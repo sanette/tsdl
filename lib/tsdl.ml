@@ -15,8 +15,9 @@ module Sdl = struct
 open Tsdl_consts
 
 (* Set this to true to print the foreign symbols in the CI *)
-let debug_symbols = false
-let pre = if debug_symbols then print_endline else ignore
+let debug = Sys.getenv_opt "OCAMLCI" = Some "true" ||
+            Sys.getenv_opt "TSDL_DEBUG" = Some "true"
+let pre = if debug then print_endline else ignore
 
 (* Formatting with continuation. *)
 
@@ -48,26 +49,19 @@ let lib_sdl2 =
   match Sys.os_type with
   | "Win32" | "Cygwin" ->
     trylib "SDL2.dll"
-  | "Unix" -> begin try
-        trylib "libSDL2.so"
-      with _ -> begin try
-            trylib "libSDL2-2.0.so.0"
-          with _ -> begin try
-                (* macOS *)
-                trylib "/Library/Frameworks/SDL2.framework/SDL2"
-              with _ -> begin try
-                    (* Homebrew on macOS Intel *)
-                    trylib "/usr/local/lib/libSDL2.dylib"
-                  with _ -> begin try
-                        (* Homebrew Apple Silicon (M1/M2/M3) *)
-                        trylib "/opt/homebrew/lib/libSDL2.dylib"
-                      with _ -> begin
-                          print_endline "Could not find SDL2 library file.";
-                          None
-                        end
-                    end
-                end
-            end
+  | "Unix" ->  begin
+      try trylib "libSDL2.so"
+      with _ ->
+      try trylib "libSDL2-2.0.so.0"
+      with _ -> (* maybe macOS *)
+      try trylib "/Library/Frameworks/SDL2.framework/SDL2"
+      with _ -> (* Homebrew on macOS Intel *)
+      try trylib "/usr/local/lib/libSDL2.dylib"
+      with _ -> (* Homebrew Apple Silicon (M1/M2/M3) *)
+      try trylib "/opt/homebrew/lib/libSDL2.dylib"
+      with _ -> begin
+          print_endline "Could not find SDL2 library file.";
+          None
         end
     end
   | _ -> print_endline "Unsupported OS type.";
@@ -175,36 +169,10 @@ module Imap = Map.Make(Int)
 type ('a, 'b) bigarray = ('a, 'b, Bigarray.c_layout) Bigarray.Array1.t
 
 let ba_create k len = Bigarray.Array1.create k Bigarray.c_layout len
-let ba_kind_byte_size :  ('a, 'b) Bigarray.kind -> int = fun k ->
-  let open Bigarray in
-  (* FIXME: see http://caml.inria.fr/mantis/view.php?id=6263 *)
-  match Obj.magic k with
-  | k when k = char || k = int8_signed || k = int8_unsigned -> 1
-  | k when k = int16_signed || k = int16_unsigned -> 2
-  | k when k = int32 || k = float32 -> 4
-  | k when k = float64 || k = int64 || k = complex32 -> 8
-  | k when k = complex64 -> 16
-  | k when k = int || k = nativeint -> Sys.word_size / 8
-  | _ -> assert false
+let ba_kind_byte_size = Bigarray.kind_size_in_bytes
 
 let access_ptr_typ_of_ba_kind : ('a, 'b) Bigarray.kind -> 'a ptr typ = fun k ->
-  let open Bigarray in
-  (* FIXME: use typ_of_bigarray_kind when ctypes support it. *)
-  match Obj.magic k with
-  | k when k = float32 -> Obj.magic (ptr Ctypes.float)
-  | k when k = float64 -> Obj.magic (ptr Ctypes.double)
-  | k when k = complex32 -> Obj.magic (ptr Ctypes.complex32)
-  | k when k = complex64 -> Obj.magic (ptr Ctypes.complex64)
-  | k when k = int8_signed -> Obj.magic (ptr Ctypes.int8_t)
-  | k when k = int8_unsigned -> Obj.magic (ptr Ctypes.uint8_t)
-  | k when k = int16_signed -> Obj.magic (ptr Ctypes.int16_t)
-  | k when k = int16_unsigned -> Obj.magic (ptr Ctypes.uint16_t)
-  | k when k = int -> Obj.magic (ptr Ctypes.camlint)
-  | k when k = int32 -> Obj.magic (ptr Ctypes.int32_t)
-  | k when k = int64 -> Obj.magic (ptr Ctypes.int64_t)
-  | k when k = nativeint -> Obj.magic (ptr Ctypes.nativeint)
-  | k when k = char -> Obj.magic (ptr Ctypes.char)
-  | _ -> assert false
+  (* Obj.magic *) (ptr (typ_of_bigarray_kind k))
 
 (* Basics *)
 
@@ -372,7 +340,7 @@ let get_version () =
 
 let sdl2_version = get_version ()
 
-let () = if debug_symbols
+let () = if debug
   then let a,b,c = sdl2_version in log "SDL Version (%u,%u,%u)" a b c
 
 let get_revision =
