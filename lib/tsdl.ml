@@ -50,7 +50,7 @@ let sdl2_candidates =
       (* Linux *)
       "libSDL2.so";
       "libSDL2-2.0.so.0";
-      (* FreeBSD *)
+      (* FreeBSD (Not necessary?) *)
       "libSDL2.so.0";
       "/usr/local/lib/libSDL2.so";
       "/usr/local/lib/libSDL2.so.0";
@@ -64,7 +64,7 @@ let sdl2_candidates =
   | _ -> []
 
 let lib_sdl2 =
-  Dynlib.load ~env:"LIBSDL2_PATH" ~debug ~name:"SDL2" sdl2_candidates
+  Dynlib.load ~env:"SDL2_LIBRARY" ~debug ~name:"SDL2" sdl2_candidates
 
 let foreign = foreign ?from:lib_sdl2
 

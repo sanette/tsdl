@@ -35,6 +35,10 @@ let load ?env ?(debug=false) ~name candidates =
       List.iter (fun (file, exn) ->
           prerr_endline (Printf.sprintf "  - %s (%s)"
                            file (Printexc.to_string exn)))
-        (List.rev !errors)
+        (List.rev !errors);
+      match env with
+      | Some var ->
+        prerr_endline ("You may use the " ^ var ^ " environement variable to specify the library file.")
+      | None -> ()
     end;
     None
