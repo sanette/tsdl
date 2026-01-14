@@ -47,8 +47,14 @@ let sdl2_candidates =
   match Sys.os_type with
   | "Win32" | "Cygwin" -> [ "SDL2.dll" ]
   | "Unix" -> [
+      (* Linux *)
       "libSDL2.so";
       "libSDL2-2.0.so.0";
+      (* FreeBSD *)
+      "libSDL2.so.0";
+      "/usr/local/lib/libSDL2.so";
+      "/usr/local/lib/libSDL2.so.0";
+      (* MacOS *)
       "libSDL2.dylib";
       "/Library/Frameworks/SDL2.framework/SDL2";
       "/usr/local/lib/libSDL2.dylib";
