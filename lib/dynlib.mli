@@ -1,0 +1,20 @@
+(** Simple dynamic library loader for ctypes-based bindings *)
+
+(* type handle = Dl.library *)
+
+(** [load ?env ?debug ~name candidates] tries to load a dynamic library.
+
+    - [name] is used for diagnostics only (e.g. "SDL2")
+    - [candidates] is a list of filenames / paths to try
+    - if [env] is provided and the environment variable exists,
+      its value is tried first
+    - if [debug] is true, detailed errors are printed
+
+    Returns [Some handle] on success, [None] on failure.
+*)
+val load :
+  ?env:string ->
+  ?debug:bool ->
+  name:string ->
+  string list ->
+  Dl.library option

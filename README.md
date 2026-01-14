@@ -1,5 +1,5 @@
 # Experimental dune version of TSDL
-(SDL2 bindings for OCaml)
+(SDL2 bindings for OCaml with runtime dynamic loading)
 
 original: https://github.com/dbuenzli/tsdl
 
@@ -45,7 +45,11 @@ opam unpin https://github.com/sanette/tsdl.git
   nor use the `-mwindows`. Instead, the `-mconsole` flag would be more
   appropriate.
 
-  **=>** In this version I have removed the call to `pkg-config`.
+  **=>** In this version, I have removed the call to `pkg-config`. The
+  library uses runtime dynamic loading to access the SDL2 library.
+  The SDL2 shared library is not linked at build time; instead it is
+  located and loaded at runtime using `dlopen` (or the platform
+  equivalent).
 
 - Another Windows specificity: the "function" `SDL_RWclose`, which on
   Linux/MacOS can be bound (by `tsdl`) via a foreign call, is just a

@@ -43,32 +43,22 @@ let err_array_to_short ~exp ~fnd =
 
 (* Load SDL2 *)
 
-let lib_sdl2 =
-  let trylib filename =
-    Some (Dl.dlopen ~flags:[Dl.RTLD_NOW; Dl.RTLD_GLOBAL] ~filename) in
+let sdl2_candidates =
   match Sys.os_type with
-  | "Win32" | "Cygwin" ->
-    trylib "SDL2.dll"
-  | "Unix" ->  begin
-      try trylib "libSDL2.so"
-      with _ ->
-      try trylib "libSDL2-2.0.so.0"
-      with _ -> (* maybe macOS *)
-      try trylib "/Library/Frameworks/SDL2.framework/SDL2"
-      with _ -> (* Homebrew on macOS Intel *)
-      try trylib "/usr/local/lib/libSDL2.dylib"
-      with _ -> (* Homebrew Apple Silicon (M1/M2/M3) *)
-      try trylib "/opt/homebrew/lib/libSDL2.dylib"
-      with _ -> (* Macports *)
-      try trylib "/opt/local/lib/libSDL2.dylib"
-      with _ ->
-        begin
-          print_endline "Could not find SDL2 library file.";
-          None
-        end
-    end
-  | _ -> print_endline "Unsupported OS type.";
-    None
+  | "Win32" | "Cygwin" -> [ "SDL2.dll" ]
+  | "Unix" -> [
+      "libSDL2.so";
+      "libSDL2-2.0.so.0";
+      "libSDL2.dylib";
+      "/Library/Frameworks/SDL2.framework/SDL2";
+      "/usr/local/lib/libSDL2.dylib";
+      "/opt/homebrew/lib/libSDL2.dylib";
+      "/opt/local/lib/libSDL2.dylib";
+    ]
+  | _ -> []
+
+let lib_sdl2 =
+  Dynlib.load ~env:"LIBSDL2_PATH" ~debug ~name:"SDL2" sdl2_candidates
 
 let foreign = foreign ?from:lib_sdl2
 
