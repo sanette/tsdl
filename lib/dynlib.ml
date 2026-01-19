@@ -1,3 +1,5 @@
+open Printf
+
 let default_flags = Dl.[ RTLD_NOW; RTLD_GLOBAL ]
 
 let load ?env ?(debug=false) ~name candidates =
@@ -29,16 +31,15 @@ let load ?env ?(debug=false) ~name candidates =
   | Some h -> Some h
   | None ->
     if debug then begin
-      prerr_endline
-        (Printf.sprintf "dynlib: could not load %s." name);
+      prerr_endline (sprintf "dynlib: could not load %s." name);
       prerr_endline "dynlib: tried:";
       List.iter (fun (file, exn) ->
-          prerr_endline (Printf.sprintf "  - %s (%s)"
-                           file (Printexc.to_string exn)))
+          prerr_endline (sprintf "  - %s (%s)" file (Printexc.to_string exn)))
         (List.rev !errors);
       match env with
       | Some var ->
-        prerr_endline ("You may use the " ^ var ^ " environement variable to specify the library file.")
+        prerr_endline (sprintf "You may use the %s environement variable to \
+                                specify the %s library file." var name)
       | None -> ()
     end;
     None
