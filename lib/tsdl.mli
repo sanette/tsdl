@@ -289,6 +289,12 @@ val log_warn : Log.category -> ('b, Format.formatter, unit) format -> 'b
 val get_version : unit -> (int * int * int)
 (** {{:http://wiki.libsdl.org/SDL2/SDL_GetVersion}SDL_GetVersion} *)
 
+val is_available : ?from_version:int * int * int -> string -> bool
+(** For instance [is_available "render_get_window"] will tell you if the
+    function {!render_get_window} is available for the SDL version used when
+    compiling [tsdl]. In case the library is changed after compilation, you
+    should provide the version with the [from_version] parameter. *)
+
 val get_revision : unit -> string
 (** {{:http://wiki.libsdl.org/SDL2/SDL_GetRevision}SDL_GetRevision} *)
 
@@ -3820,6 +3826,9 @@ val clear_queued_audio : audio_device_id -> unit
 (** {{:http://wiki.libsdl.org/SDL2/SDL_ClearQueuedAudio}
     ClearQueuedAudio} *)
 
+val get_default_audio_info : bool -> (string option * audio_spec) result
+(** {{:https://wiki.libsdl.org/SDL2/SDL_GetDefaultAudioInfo}
+    SDL_GetDefaultAudioInfo*)
 (*
 
 (** {2:audioconvert Audio conversion} *)
