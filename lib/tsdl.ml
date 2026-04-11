@@ -24,7 +24,7 @@ let pre = if debug then print_endline else ignore
 
 (* The stub=true parameter will make a buggy binding fail only when called, not
    at startup. *)
-let stub = debug
+let stub = not debug
 
 (* Formatting with continuation. *)
 
