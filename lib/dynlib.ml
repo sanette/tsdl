@@ -2,17 +2,14 @@ open Printf
 
 let default_flags = Dl.[ RTLD_NOW; RTLD_GLOBAL ]
 
-let load ?env ?(debug=false) ~name candidates =
+let load ?(env = []) ?(debug=false) ~name candidates =
   let flags = default_flags in
 
   let candidates =
-    match env with
-    | Some var ->
-      begin match Sys.getenv_opt var with
-        | Some path -> path :: candidates
-        | None -> candidates
-      end
-    | None -> candidates
+    List.fold_left (fun list var ->
+        match Sys.getenv_opt var with
+        | Some path -> path :: list
+        | None -> list) candidates env
   in
 
   let errors = ref [] in
@@ -37,9 +34,13 @@ let load ?env ?(debug=false) ~name candidates =
           prerr_endline (sprintf "  - %s (%s)" file (Printexc.to_string exn)))
         (List.rev !errors);
       match env with
-      | Some var ->
+      | [] -> ()
+      | [var] ->
         prerr_endline (sprintf "You may use the %s environement variable to \
                                 specify the %s library file." var name)
-      | None -> ()
+      | list ->
+        prerr_endline (sprintf "You may use one of the [%s] environement \
+                                variables to specify the %s library file."
+                         (String.concat "," list) name)
     end;
     None

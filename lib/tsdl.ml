@@ -18,8 +18,10 @@ module Sdl = struct
 open Tsdl_consts
 
 (* Set this to true to print the foreign symbols in the CI *)
-let debug = Sys.getenv_opt "OCAMLCI" = Some "true" ||
-            Sys.getenv_opt "TSDL_DEBUG" = Some "true"
+let debug = Sys.getenv_opt "OCAMLCI" = Some "true"
+            || Sys.getenv_opt "TSDL_DEBUG" = Some "true"
+            || Sys.getenv_opt "OPAM_REPO_CI" = Some "true"
+
 let pre = if debug then print_endline else ignore
 
 (* The stub=true parameter will make a buggy binding fail only when called, not
@@ -71,7 +73,7 @@ let sdl2_candidates =
   | _ -> []
 
 let lib_sdl2 =
-  Dynlib.load ~env:"SDL2_LIBRARY" ~debug ~name:"SDL2" sdl2_candidates
+  Dynlib.load ~env:["SDL2_LIBRARY"; "LIBSDL2_SHLIB"] ~debug ~name:"SDL2" sdl2_candidates
 
 let foreign ?release_runtime_lock s =
   pre s; foreign ~stub ?from:lib_sdl2 ?release_runtime_lock s

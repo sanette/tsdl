@@ -10,5 +10,5 @@
 
     Returns [Some handle] on success, [None] on failure.
 *)
-val load : ?env:string -> ?debug:bool -> name:string -> string list ->
+val load : ?env:(string list) -> ?debug:bool -> name:string -> string list ->
   Dl.library option
