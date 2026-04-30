@@ -18,7 +18,9 @@ let load ?(env = []) ?(debug=false) ~name candidates =
     | [] -> None
     | filename :: rest ->
       try
-        Some (Dl.dlopen ~flags ~filename)
+        let res = Some (Dl.dlopen ~flags ~filename) in
+        if debug then prerr_endline (sprintf "Dynlib: using %S for %s." filename name);
+        res
       with exn ->
         errors := (filename, exn) :: !errors;
         try_all rest
